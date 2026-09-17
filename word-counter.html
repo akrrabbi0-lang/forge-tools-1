@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Word & Character Counter Online — No Sign-up | Forge</title>
+<meta name="description" content="Free online word counter and character counter. Count words, characters, sentences, paragraphs, and estimated reading time instantly. Runs in your browser — nothing is uploaded.">
+<link rel="canonical" href="https://REPLACE_WITH_YOUR_DOMAIN/word-counter.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body class="tool-page">
+
+<div class="tool-topbar">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Home
+  </a>
+  <span class="tt-name">Word Counter</span>
+</div>
+
+<div class="tool-body">
+<section class="tool-panel" id="tool-words">
+      <h2>Word &amp; Character Counter</h2>
+      <p class="desc">Paste or type your text below. Counts update as you go.</p>
+      <div class="field">
+        <label>Your text</label>
+        <textarea id="wc-input" placeholder="Start typing or paste text here…"></textarea>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="num" id="wc-words">0</div><div class="lbl">WORDS</div></div>
+        <div class="stat"><div class="num" id="wc-chars">0</div><div class="lbl">CHARACTERS</div></div>
+        <div class="stat"><div class="num" id="wc-charsns">0</div><div class="lbl">NO SPACES</div></div>
+        <div class="stat"><div class="num" id="wc-sentences">0</div><div class="lbl">SENTENCES</div></div>
+        <div class="stat"><div class="num" id="wc-paras">0</div><div class="lbl">PARAGRAPHS</div></div>
+        <div class="stat"><div class="num" id="wc-read">0s</div><div class="lbl">READ TIME</div></div>
+      </div>
+    </section>
+</div>
+
+<script>
+/* ---------- WORD COUNTER ---------- */
+const wcInput = document.getElementById('wc-input');
+function updateWC(){
+  const text = wcInput.value;
+  const trimmed = text.trim();
+  const words = trimmed.length ? trimmed.split(/\s+/).length : 0;
+  const chars = text.length;
+  const charsNS = text.replace(/\s/g,'').length;
+  const sentences = trimmed.length ? (trimmed.match(/[.!?]+(\s|$)/g) || []).length || (trimmed.length?1:0) : 0;
+  const paras = trimmed.length ? trimmed.split(/\n+/).filter(p=>p.trim().length).length : 0;
+  const readSec = Math.max(0, Math.round(words / 200 * 60));
+  document.getElementById('wc-words').textContent = words;
+  document.getElementById('wc-chars').textContent = chars;
+  document.getElementById('wc-charsns').textContent = charsNS;
+  document.getElementById('wc-sentences').textContent = sentences;
+  document.getElementById('wc-paras').textContent = paras;
+  document.getElementById('wc-read').textContent = readSec < 60 ? readSec+'s' : Math.round(readSec/60)+'m';
+}
+wcInput.addEventListener('input', updateWC);
+
+updateWC();
+
+</script>
+
+</body>
+</html>

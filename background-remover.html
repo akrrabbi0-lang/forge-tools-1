@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Background Remover Online — AI Powered | Forge</title>
+<meta name="description" content="Remove the background from any photo for free using an AI model that runs in your browser. No upload to a server, no sign-up, no watermark.">
+<link rel="canonical" href="https://REPLACE_WITH_YOUR_DOMAIN/background-remover.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body class="tool-page">
+
+<div class="tool-topbar">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Home
+  </a>
+  <span class="tt-name">Background Remover</span>
+</div>
+
+<div class="tool-body">
+<section class="tool-panel" id="tool-bgremove">
+      <h2>Background Remover</h2>
+      <p class="desc">Upload an image and get it back with the background stripped out. Runs on an AI model loaded into your browser — nothing is uploaded to a server. Works best on photos with a clear subject (people, products, animals).</p>
+      <div class="drop-zone" id="bg-drop">Click to choose an image, or drag one here</div>
+      <input type="file" id="bg-file" accept="image/*" class="hidden">
+      <div class="row" style="margin-top:8px;">
+        <div class="field">
+          <label>Original</label>
+          <img id="bg-preview-original" style="max-width:100%; border:1px solid var(--line); display:none;">
+        </div>
+        <div class="field">
+          <label>Result</label>
+          <img id="bg-preview-result" style="max-width:100%; border:1px solid var(--line); display:none; background-image:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%); background-size:16px 16px; background-position:0 0,0 8px,8px -8px,-8px 0px;">
+        </div>
+      </div>
+      <p id="bg-status" style="margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate);"></p>
+      <button class="action hidden" id="bg-download" style="margin-top:12px;">Download PNG</button>
+    </section>
+</div>
+
+<script>
+/* ---------- BACKGROUND REMOVER (client-side AI model) ---------- */
+let bgFile = null;
+let bgResultUrl = null;
+const bgDrop = document.getElementById('bg-drop');
+const bgFileInput = document.getElementById('bg-file');
+bgDrop.addEventListener('click', ()=> bgFileInput.click());
+bgDrop.addEventListener('dragover', e=>{ e.preventDefault(); bgDrop.classList.add('dragover'); });
+bgDrop.addEventListener('dragleave', ()=> bgDrop.classList.remove('dragover'));
+bgDrop.addEventListener('drop', e=>{
+  e.preventDefault();
+  bgDrop.classList.remove('dragover');
+  if(e.dataTransfer.files.length) handleBgFile(e.dataTransfer.files[0]);
+});
+bgFileInput.addEventListener('change', e=>{
+  if(e.target.files.length) handleBgFile(e.target.files[0]);
+});
+
+async function handleBgFile(file){
+  bgFile = file;
+  const origImg = document.getElementById('bg-preview-original');
+  const resultImg = document.getElementById('bg-preview-result');
+  const statusEl = document.getElementById('bg-status');
+  const sizeMB = file.size/1024/1024;
+  if(sizeMB > 20){
+    statusEl.textContent = 'This image is quite large — try one under 15MB for best results.';
+    return;
+  }
+  if(!window.WebAssembly){
+    statusEl.textContent = 'Your browser does not support WebAssembly, which this tool needs. Try an up-to-date Chrome, Firefox, or Edge.';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = async e=>{
+    origImg.src = e.target.result;
+    origImg.style.display = 'block';
+    resultImg.style.display = 'none';
+    document.getElementById('bg-download').classList.add('hidden');
+    statusEl.textContent = 'Loading model and removing background (first time can take up to a minute)…';
+    try{
+      const { removeBackground } = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/browser.mjs');
+      const blob = await removeBackground(file);
+      if(!blob || blob.size === 0){
+        throw new Error('Empty result');
+      }
+      bgResultUrl = URL.createObjectURL(blob);
+      resultImg.src = bgResultUrl;
+      resultImg.style.display = 'block';
+      statusEl.textContent = 'Done.';
+      document.getElementById('bg-download').classList.remove('hidden');
+    } catch(err){
+      statusEl.textContent = 'Could not process this image (' + (err.message || 'unknown error') + '). Try a smaller photo or a different one.';
+      console.error(err);
+    }
+  };
+  reader.readAsDataURL(file);
+}
+document.getElementById('bg-download').addEventListener('click', ()=>{
+  if(!bgResultUrl) return;
+  const link = document.createElement('a');
+  link.download = 'background-removed.png';
+  link.href = bgResultUrl;
+  link.click();
+});
+
+
+</script>
+
+</body>
+</html>

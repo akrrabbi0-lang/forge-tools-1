@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Image Resizer & Compressor Online | Forge</title>
+<meta name="description" content="Resize and compress any image for free, right in your browser. Reduce file size and dimensions without uploading your photo to a server.">
+<link rel="canonical" href="https://REPLACE_WITH_YOUR_DOMAIN/image-resizer.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body class="tool-page">
+
+<div class="tool-topbar">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Home
+  </a>
+  <span class="tt-name">Image Resizer</span>
+</div>
+
+<div class="tool-body">
+<section class="tool-panel" id="tool-image">
+      <h2>Image Resizer &amp; Compressor</h2>
+      <p class="desc">Shrink an image's dimensions or file size. Processed entirely in your browser — the file never uploads anywhere.</p>
+      <div class="drop-zone" id="img-drop">Click to choose an image, or drag one here</div>
+      <input type="file" id="img-file" accept="image/*" class="hidden">
+      <img id="img-preview">
+      <div id="img-controls" class="hidden" style="margin-top:24px;">
+        <div class="row">
+          <div class="field">
+            <label>Max width (px)</label>
+            <input type="number" id="img-width" value="1024">
+          </div>
+          <div class="field">
+            <label>Quality (0.1–1.0)</label>
+            <input type="number" id="img-quality" value="0.8" step="0.1" min="0.1" max="1">
+          </div>
+        </div>
+        <button class="action brass" id="img-process">Resize &amp; compress</button>
+        <button class="action hidden" id="img-download" style="margin-left:12px;">Download result</button>
+        <p id="img-sizeinfo" style="margin-top:14px; font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate);"></p>
+      </div>
+    </section>
+</div>
+
+<script>
+/* ---------- IMAGE RESIZER ---------- */
+const imgDrop = document.getElementById('img-drop');
+const imgFile = document.getElementById('img-file');
+const imgPreview = document.getElementById('img-preview');
+const imgControls = document.getElementById('img-controls');
+let currentImg = null;
+let originalSize = 0;
+
+imgDrop.addEventListener('click', ()=> imgFile.click());
+imgDrop.addEventListener('dragover', e=>{ e.preventDefault(); imgDrop.classList.add('dragover'); });
+imgDrop.addEventListener('dragleave', ()=> imgDrop.classList.remove('dragover'));
+imgDrop.addEventListener('drop', e=>{
+  e.preventDefault();
+  imgDrop.classList.remove('dragover');
+  if(e.dataTransfer.files.length) handleImageFile(e.dataTransfer.files[0]);
+});
+imgFile.addEventListener('change', e=>{
+  if(e.target.files.length) handleImageFile(e.target.files[0]);
+});
+
+function handleImageFile(file){
+  originalSize = file.size;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    currentImg = new Image();
+    currentImg.onload = ()=>{
+      imgPreview.src = e.target.result;
+      imgPreview.style.display = 'block';
+      imgControls.classList.remove('hidden');
+      document.getElementById('img-width').value = currentImg.width;
+      document.getElementById('img-sizeinfo').textContent = `Original: ${currentImg.width}×${currentImg.height}px, ${(originalSize/1024).toFixed(1)} KB`;
+    };
+    currentImg.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+let processedDataUrl = null;
+document.getElementById('img-process').addEventListener('click', ()=>{
+  if(!currentImg) return;
+  const maxWidth = parseInt(document.getElementById('img-width').value) || currentImg.width;
+  const quality = parseFloat(document.getElementById('img-quality').value) || 0.8;
+  const scale = Math.min(1, maxWidth / currentImg.width);
+  const w = Math.round(currentImg.width * scale);
+  const h = Math.round(currentImg.height * scale);
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(currentImg, 0, 0, w, h);
+  processedDataUrl = canvas.toDataURL('image/jpeg', quality);
+  const newSizeKB = (processedDataUrl.length * 0.75 / 1024).toFixed(1);
+  document.getElementById('img-sizeinfo').textContent = `Original: ${currentImg.width}×${currentImg.height}px, ${(originalSize/1024).toFixed(1)} KB  →  New: ${w}×${h}px, ~${newSizeKB} KB`;
+  document.getElementById('img-download').classList.remove('hidden');
+});
+document.getElementById('img-download').addEventListener('click', ()=>{
+  if(!processedDataUrl) return;
+  const link = document.createElement('a');
+  link.download = 'resized-image.jpg';
+  link.href = processedDataUrl;
+  link.click();
+});
+
+</script>
+
+</body>
+</html>

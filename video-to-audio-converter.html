@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Video to Audio Converter Online — No Upload | Forge</title>
+<meta name="description" content="Convert any video to an MP3 audio file for free, directly in your browser. No file upload to a server, no software install, no sign-up required.">
+<link rel="canonical" href="https://REPLACE_WITH_YOUR_DOMAIN/video-to-audio-converter.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body class="tool-page">
+
+<div class="tool-topbar">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Home
+  </a>
+  <span class="tt-name">Audio Converter</span>
+</div>
+
+<div class="tool-body">
+<section class="tool-panel" id="tool-audio">
+      <h2>Video to Audio Converter</h2>
+      <p class="desc">Upload a video file and pull out the audio as an MP3. The conversion runs entirely in your browser — the file never leaves your device. The converter engine (~25MB) loads once, the first time you use it.</p>
+      <div class="drop-zone" id="audio-drop">Click to choose a video file, or drag one here</div>
+      <input type="file" id="audio-file" accept="video/*" class="hidden">
+      <p id="audio-filename" style="font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate); margin-bottom:16px;"></p>
+      <button class="action brass hidden" id="audio-convert">Convert to MP3</button>
+      <p id="audio-status" style="margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate);"></p>
+      <button class="action hidden" id="audio-download" style="margin-top:12px;">Download MP3</button>
+    </section>
+</div>
+
+<script>
+/* ---------- AUDIO CONVERTER (video -> mp3, via ffmpeg.wasm) ---------- */
+let ffmpegInstance = null;
+let audioFile = null;
+
+function loadScript(src){
+  return new Promise((resolve, reject)=>{
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = ()=> reject(new Error('Failed to load ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+async function getFFmpeg(){
+  if(ffmpegInstance) return ffmpegInstance;
+  if(typeof FFmpeg === 'undefined'){
+    await loadScript('https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js');
+  }
+  const { createFFmpeg } = FFmpeg;
+  // Multi-threaded core: much faster, handles bigger files better.
+  // Requires the page to be served with COOP/COEP headers (see hosting instructions).
+  const crossOriginIsolated = window.crossOriginIsolated === true;
+  ffmpegInstance = createFFmpeg({
+    log:false,
+    corePath: crossOriginIsolated
+      ? 'https://unpkg.com/@ffmpeg/core-mt@0.11.0/dist/ffmpeg-core.js'
+      : 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'
+  });
+  await ffmpegInstance.load();
+  return ffmpegInstance;
+}
+
+const audioDrop = document.getElementById('audio-drop');
+const audioFileInput = document.getElementById('audio-file');
+audioDrop.addEventListener('click', ()=> audioFileInput.click());
+audioDrop.addEventListener('dragover', e=>{ e.preventDefault(); audioDrop.classList.add('dragover'); });
+audioDrop.addEventListener('dragleave', ()=> audioDrop.classList.remove('dragover'));
+audioDrop.addEventListener('drop', e=>{
+  e.preventDefault();
+  audioDrop.classList.remove('dragover');
+  if(e.dataTransfer.files.length) handleAudioFile(e.dataTransfer.files[0]);
+});
+audioFileInput.addEventListener('change', e=>{
+  if(e.target.files.length) handleAudioFile(e.target.files[0]);
+});
+function handleAudioFile(file){
+  audioFile = file;
+  const sizeMB = file.size/1024/1024;
+  document.getElementById('audio-filename').textContent = `Selected: ${file.name} (${sizeMB.toFixed(1)} MB)`;
+  document.getElementById('audio-convert').classList.remove('hidden');
+  document.getElementById('audio-download').classList.add('hidden');
+  const statusEl = document.getElementById('audio-status');
+  if(sizeMB > 300){
+    statusEl.textContent = 'This file is quite large for browser-based conversion. It may be slow or fail — a file under 300MB works best (or under 100MB if you have not enabled the fast multi-thread mode).';
+  } else {
+    statusEl.textContent = '';
+  }
+}
+
+let audioResultUrl = null;
+document.getElementById('audio-convert').addEventListener('click', async ()=>{
+  if(!audioFile) return;
+  const statusEl = document.getElementById('audio-status');
+  const btn = document.getElementById('audio-convert');
+  btn.disabled = true;
+  if(!window.WebAssembly){
+    statusEl.textContent = 'Your browser does not support WebAssembly, which this tool needs. Try an up-to-date Chrome, Firefox, or Edge.';
+    btn.disabled = false;
+    return;
+  }
+  try{
+    statusEl.textContent = 'Loading converter engine (first time only, ~25MB)…';
+    const ffmpeg = await getFFmpeg();
+    ffmpeg.setProgress(({ ratio }) => {
+      if(ratio >= 0 && ratio <= 1){
+        statusEl.textContent = `Converting… ${Math.round(ratio*100)}%`;
+      }
+    });
+    statusEl.textContent = 'Converting… this can take a minute for larger files.';
+    const { fetchFile } = FFmpeg;
+    const ext = (audioFile.name.match(/\.[0-9a-z]+$/i) || ['.mp4'])[0];
+    const inputName = 'input' + ext;
+    ffmpeg.FS('writeFile', inputName, await fetchFile(audioFile));
+    await ffmpeg.run('-i', inputName, '-q:a', '2', '-map', 'a', 'output.mp3');
+    const data = ffmpeg.FS('readFile', 'output.mp3');
+    if(!data || !data.buffer || data.buffer.byteLength === 0){
+      throw new Error('Empty output — this video may not have an audio track.');
+    }
+    const blob = new Blob([data.buffer], { type: 'audio/mp3' });
+    audioResultUrl = URL.createObjectURL(blob);
+    statusEl.textContent = 'Done — your MP3 is ready.';
+    document.getElementById('audio-download').classList.remove('hidden');
+  } catch(err){
+    statusEl.textContent = 'Conversion failed: ' + (err.message || 'unknown error') + '. Try a smaller file or a different format (MP4 works best).';
+    console.error(err);
+  }
+  btn.disabled = false;
+});
+document.getElementById('audio-download').addEventListener('click', ()=>{
+  if(!audioResultUrl) return;
+  const link = document.createElement('a');
+  link.download = 'converted-audio.mp3';
+  link.href = audioResultUrl;
+  link.click();
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://REPLACE_WITH_YOUR_DOMAIN/index.html</loc><priority>1.0</priority></url>
+  <url><loc>https://REPLACE_WITH_YOUR_DOMAIN/word-counter.html</loc><priority>0.8</priority></url>
+  <url><loc>https://REPLACE_WITH_YOUR_DOMAIN/qr-generator.html</loc><priority>0.8</priority></url>
+  <url><loc>https://REPLACE_WITH_YOUR_DOMAIN/password-generator.html</loc><priority>0.8</priority></url>
+  <url><loc>https://REPLACE_WITH_YOUR_DOMAIN/unit-converter.html</loc><priority>0.8</priority></url>
+  <url><loc>https://REPLACE_WITH_YOUR_DOMAIN/image-resizer.html</loc><priority>0.8</priority></url>
+  <url><loc>https://REPLACE_WITH_YOUR_DOMAIN/video-to-audio-converter.html</loc><priority>0.8</priority></url>
+  <url><loc>https://REPLACE_WITH_YOUR_DOMAIN/background-remover.html</loc><priority>0.8</priority></url>
+</urlset>

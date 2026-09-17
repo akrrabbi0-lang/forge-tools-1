@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Unit Converter — Length, Weight, Temperature | Forge</title>
+<meta name="description" content="Convert between common units of length, weight, and temperature instantly and for free. Meters, feet, kilograms, pounds, Celsius, Fahrenheit and more.">
+<link rel="canonical" href="https://REPLACE_WITH_YOUR_DOMAIN/unit-converter.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body class="tool-page">
+
+<div class="tool-topbar">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Home
+  </a>
+  <span class="tt-name">Unit Converter</span>
+</div>
+
+<div class="tool-body">
+<section class="tool-panel" id="tool-convert">
+      <h2>Unit Converter</h2>
+      <p class="desc">Convert between common units of length, weight, and temperature.</p>
+      <div class="field">
+        <label>Category</label>
+        <select id="conv-category">
+          <option value="length">Length</option>
+          <option value="weight">Weight</option>
+          <option value="temp">Temperature</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>From</label>
+          <input type="number" id="conv-input" value="1">
+          <select id="conv-from" style="margin-top:10px;"></select>
+        </div>
+        <div class="field">
+          <label>To</label>
+          <input type="text" id="conv-output" readonly style="background:var(--paper-dim); font-weight:600;">
+          <select id="conv-to" style="margin-top:10px;"></select>
+        </div>
+      </div>
+    </section>
+</div>
+
+<script>
+/* ---------- UNIT CONVERTER ---------- */
+const units = {
+  length: { m:1, km:1000, cm:0.01, mm:0.001, mi:1609.34, yd:0.9144, ft:0.3048, in:0.0254 },
+  weight: { kg:1, g:0.001, mg:0.000001, lb:0.453592, oz:0.0283495, ton:1000 },
+};
+const unitLabels = {
+  m:'Meters', km:'Kilometers', cm:'Centimeters', mm:'Millimeters', mi:'Miles', yd:'Yards', ft:'Feet', in:'Inches',
+  kg:'Kilograms', g:'Grams', mg:'Milligrams', lb:'Pounds', oz:'Ounces', ton:'Metric Tons',
+  c:'Celsius', f:'Fahrenheit', k:'Kelvin'
+};
+const catSelect = document.getElementById('conv-category');
+const fromSelect = document.getElementById('conv-from');
+const toSelect = document.getElementById('conv-to');
+
+function populateUnitSelects(){
+  const cat = catSelect.value;
+  let keys;
+  if(cat === 'temp') keys = ['c','f','k'];
+  else keys = Object.keys(units[cat]);
+  fromSelect.innerHTML = keys.map(k=>`<option value="${k}">${unitLabels[k]}</option>`).join('');
+  toSelect.innerHTML = keys.map(k=>`<option value="${k}">${unitLabels[k]}</option>`).join('');
+  toSelect.selectedIndex = keys.length > 1 ? 1 : 0;
+  runConversion();
+}
+
+function convertTemp(val, from, to){
+  let celsius;
+  if(from==='c') celsius = val;
+  else if(from==='f') celsius = (val-32)*5/9;
+  else celsius = val - 273.15;
+  if(to==='c') return celsius;
+  if(to==='f') return celsius*9/5+32;
+  return celsius + 273.15;
+}
+
+function runConversion(){
+  const cat = catSelect.value;
+  const val = parseFloat(document.getElementById('conv-input').value);
+  const from = fromSelect.value;
+  const to = toSelect.value;
+  if(isNaN(val)){ document.getElementById('conv-output').value = ''; return; }
+  let result;
+  if(cat === 'temp'){
+    result = convertTemp(val, from, to);
+  } else {
+    const base = val * units[cat][from];
+    result = base / units[cat][to];
+  }
+  document.getElementById('conv-output').value = Math.round(result * 100000) / 100000;
+}
+
+catSelect.addEventListener('change', populateUnitSelects);
+[document.getElementById('conv-input'), fromSelect, toSelect].forEach(el=>{
+  el.addEventListener('input', runConversion);
+  el.addEventListener('change', runConversion);
+});
+populateUnitSelects();
+
+</script>
+
+</body>
+</html>
