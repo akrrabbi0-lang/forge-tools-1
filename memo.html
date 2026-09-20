@@ -159,6 +159,14 @@
   <span class="tt-name">Memo</span>
 </div>
 
+<div id="memo-signin-gate" style="max-width:420px; margin:80px auto; text-align:center; padding:0 24px;">
+  <h2 style="font-family:'Space Grotesk',sans-serif; font-size:22px; margin-bottom:12px;">Sign in to use Memo</h2>
+  <p class="desc" style="color:var(--slate); font-size:14px; margin-bottom:24px;">Your memos stay on this device. Signing in with Google just keeps your account tied to anything you choose to share with a QR code.</p>
+  <button class="action brass" id="memo-signin-btn">Sign in with Google</button>
+  <p id="memo-signin-status" style="margin-top:16px; font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--slate);"></p>
+</div>
+
+<div id="memo-app-content" class="hidden">
 <div class="memo-layout">
   <aside class="memo-sidebar">
     <button class="action brass" id="memo-new" style="width:100%; margin-bottom:16px;">+ New memo</button>
@@ -189,6 +197,7 @@
     </div>
   </main>
 </div>
+</div>
 
 <div id="memo-save-popover" class="hidden popover-overlay">
   <div class="popover-box">
@@ -198,6 +207,7 @@
     <button class="popover-close" id="memo-popover-close">Cancel</button>
   </div>
 </div>
+
 
 <script>
 /* ---------- SHARED INDEXEDDB HELPER ---------- */
@@ -479,8 +489,34 @@ document.getElementById('memo-viewer-qr').addEventListener('click', async (e)=>{
   }
 });
 
-/* ---------- INIT ---------- */
-refreshSidebar();
+/* ---------- INIT / AUTH GATE ---------- */
+(async function initAuthGate(){
+  const { auth, authMod } = await getAuthRef();
+  authMod.onAuthStateChanged(auth, (user)=>{
+    const gate = document.getElementById('memo-signin-gate');
+    const content = document.getElementById('memo-app-content');
+    if(user){
+      gate.classList.add('hidden');
+      content.classList.remove('hidden');
+      refreshSidebar();
+    } else {
+      gate.classList.remove('hidden');
+      content.classList.add('hidden');
+    }
+  });
+})();
+
+document.getElementById('memo-signin-btn').addEventListener('click', async ()=>{
+  const statusEl2 = document.getElementById('memo-signin-status');
+  statusEl2.textContent = 'Opening Google sign-in…';
+  try{
+    await ensureSignedIn();
+    statusEl2.textContent = '';
+  } catch(err){
+    statusEl2.textContent = 'Sign-in failed or was cancelled (' + (err && err.message ? err.message : 'unknown error') + '). Try again.';
+    console.error(err);
+  }
+});
 </script>
 
 </body>
