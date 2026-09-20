@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="shortcut icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memo — Forge</title>
+<meta name="description" content="Save notes, photos, and videos as memos, and share any memo instantly with a QR code.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .memo-layout{
+    display:flex;
+    gap:0;
+    align-items:flex-start;
+    max-width:1100px;
+    margin:0 auto;
+    padding:32px 24px 80px;
+  }
+  .memo-sidebar{
+    width:260px;
+    flex-shrink:0;
+    border-right:1px solid var(--line);
+    padding-right:20px;
+    margin-right:24px;
+  }
+  .memo-list-item{
+    padding:12px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    margin-bottom:8px;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .memo-list-item:hover{ border-color:var(--brass); }
+  .memo-list-item.active{ border-color:var(--brass); background:var(--paper-dim); }
+  .memo-list-item .snippet{
+    font-size:13px;
+    color:var(--ink);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    margin-bottom:4px;
+  }
+  .memo-list-item .meta{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    color:var(--slate);
+  }
+  .memo-empty-note{
+    font-size:13px;
+    color:var(--slate);
+    font-style:italic;
+  }
+  .memo-main{ flex:1; min-width:0; }
+  #memo-text{ min-height:120px; }
+  .memo-attach-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .memo-attachments{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:20px;
+  }
+  .memo-thumb{
+    position:relative;
+    width:88px; height:88px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    overflow:hidden;
+    background:var(--paper-dim);
+  }
+  .memo-thumb img, .memo-thumb video{
+    width:100%; height:100%; object-fit:cover;
+  }
+  .memo-thumb .remove-btn{
+    position:absolute; top:2px; right:2px;
+    width:20px; height:20px;
+    background:rgba(27,36,48,0.75);
+    color:#fff;
+    border:none;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:13px;
+    line-height:1;
+  }
+  .memo-viewer-media{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin:20px 0;
+  }
+  .memo-viewer-media img, .memo-viewer-media video{
+    max-width:260px;
+    max-height:260px;
+    border:1px solid var(--line);
+    border-radius:4px;
+  }
+  .memo-viewer-text{
+    white-space:pre-wrap;
+    font-size:15px;
+    line-height:1.6;
+    margin-bottom:8px;
+  }
+  .popover-overlay{
+    position:fixed; inset:0;
+    background:rgba(14,15,20,0.55);
+    display:flex; align-items:center; justify-content:center;
+    z-index:50;
+  }
+  .popover-box{
+    background:var(--paper);
+    border-radius:6px;
+    padding:32px;
+    width:min(360px, 90vw);
+    text-align:center;
+  }
+  .popover-box h3{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:19px;
+    margin-bottom:20px;
+  }
+  .popover-box button{ width:100%; margin-bottom:10px; }
+  .popover-close{
+    background:none !important;
+    color:var(--slate) !important;
+    font-size:13px;
+    padding:6px !important;
+  }
+  @media(max-width:760px){
+    .memo-layout{ flex-direction:column; padding:20px 16px 60px; }
+    .memo-sidebar{
+      width:100%;
+      border-right:none;
+      border-bottom:1px solid var(--line);
+      padding-right:0;
+      padding-bottom:16px;
+      margin-right:0;
+      margin-bottom:20px;
+    }
+  }
+</style>
+</head>
+<body class="tool-page">
+
+<div class="tool-topbar">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Home
+  </a>
+  <span class="tt-name">Memo</span>
+</div>
+
+<div class="memo-layout">
+  <aside class="memo-sidebar">
+    <button class="action brass" id="memo-new" style="width:100%; margin-bottom:16px;">+ New memo</button>
+    <div id="memo-list"><p class="memo-empty-note">No memos yet.</p></div>
+  </aside>
+
+  <main class="memo-main">
+    <div id="memo-compose">
+      <h2 style="font-family:'Space Grotesk',sans-serif; font-size:24px; margin-bottom:6px;">New memo</h2>
+      <p class="desc" style="color:var(--slate); font-size:14px; margin-bottom:20px;">Write a text note. Saved memos stay on this device; sharing a memo with a QR code puts just that memo's text in the cloud so it can be opened on any device.</p>
+      <div class="field">
+        <label>Text</label>
+        <textarea id="memo-text" placeholder="Write something…"></textarea>
+      </div>
+      <button class="action brass" id="memo-save-btn">Save</button>
+      <p id="memo-status" style="margin-top:14px; font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--slate);"></p>
+    </div>
+
+    <div id="memo-viewer" class="hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <span id="memo-viewer-date" style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--slate);"></span>
+        <div>
+          <button class="action" id="memo-viewer-qr">Generate QR code</button>
+          <button class="action" id="memo-viewer-delete" style="background:var(--rust); color:#fff;">Delete</button>
+        </div>
+      </div>
+      <div class="memo-viewer-text" id="memo-viewer-text"></div>
+    </div>
+  </main>
+</div>
+
+<div id="memo-save-popover" class="hidden popover-overlay">
+  <div class="popover-box">
+    <h3>Save this memo</h3>
+    <button class="action brass" id="memo-save-to-list">Save to memo</button>
+    <button class="action" id="memo-generate-qr">Generate QR code</button>
+    <button class="popover-close" id="memo-popover-close">Cancel</button>
+  </div>
+</div>
+
+<script>
+/* ---------- SHARED INDEXEDDB HELPER ---------- */
+const MEMO_DB_NAME = 'forge-memo-db';
+const MEMO_DB_VERSION = 1;
+function openMemoDB(){
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open(MEMO_DB_NAME, MEMO_DB_VERSION);
+    req.onupgradeneeded = (e)=>{
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains('memos')) db.createObjectStore('memos', { keyPath: 'id' });
+      if(!db.objectStoreNames.contains('qrMemos')) db.createObjectStore('qrMemos', { keyPath: 'id' });
+    };
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+function dbPut(storeName, value){
+  return openMemoDB().then(db=> new Promise((resolve,reject)=>{
+    const tx = db.transaction(storeName,'readwrite');
+    tx.objectStore(storeName).put(value);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  }));
+}
+function dbGet(storeName, id){
+  return openMemoDB().then(db=> new Promise((resolve,reject)=>{
+    const tx = db.transaction(storeName,'readonly');
+    const req = tx.objectStore(storeName).get(id);
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  }));
+}
+function dbGetAll(storeName){
+  return openMemoDB().then(db=> new Promise((resolve,reject)=>{
+    const tx = db.transaction(storeName,'readonly');
+    const req = tx.objectStore(storeName).getAll();
+    req.onsuccess = ()=> resolve(req.result || []);
+    req.onerror = ()=> reject(req.error);
+  }));
+}
+function dbDelete(storeName, id){
+  return openMemoDB().then(db=> new Promise((resolve,reject)=>{
+    const tx = db.transaction(storeName,'readwrite');
+    tx.objectStore(storeName).delete(id);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  }));
+}
+function genId(){
+  return 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+}
+
+/* ---------- FIREBASE (used only for the "Generate QR code" cross-device path) ---------- */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAySyWMbvRHmt6FpFnkybEJcJVAIfaCdgU",
+  authDomain: "forge-3f660.firebaseapp.com",
+  projectId: "forge-3f660",
+  storageBucket: "forge-3f660.firebasestorage.app",
+  messagingSenderId: "898806653462",
+  appId: "1:898806653462:web:051fbefac1425d712a4b37"
+};
+const FIREBASE_SDK_VERSION = "12.19.0";
+let _fbApp = null;
+let _fbCache = {};
+async function getFirebaseApp(){
+  if(_fbApp) return _fbApp;
+  const { initializeApp } = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-app.js`);
+  _fbApp = initializeApp(FIREBASE_CONFIG);
+  return _fbApp;
+}
+async function getFirestoreRef(){
+  if(_fbCache.db) return _fbCache;
+  const app = await getFirebaseApp();
+  const firestoreMod = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-firestore.js`);
+  _fbCache.db = firestoreMod.getFirestore(app);
+  _fbCache.firestoreMod = firestoreMod;
+  return _fbCache;
+}
+async function getAuthRef(){
+  if(_fbCache.auth) return _fbCache;
+  const app = await getFirebaseApp();
+  const authMod = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-auth.js`);
+  _fbCache.auth = authMod.getAuth(app);
+  _fbCache.authMod = authMod;
+  return _fbCache;
+}
+
+/* Sign in with Google — only called right before a cloud (QR-share) action */
+async function ensureSignedIn(){
+  const { auth, authMod } = await getAuthRef();
+  if(auth.currentUser) return auth.currentUser;
+  const provider = new authMod.GoogleAuthProvider();
+  const result = await authMod.signInWithPopup(auth, provider);
+  return result.user;
+}
+
+/* ---------- PER-ACCOUNT CLOUD QUOTA (tracked in Firestore, tied to the signed-in Google account) ---------- */
+const MAX_CLOUD_BYTES_PER_ACCOUNT = 200 * 1024 * 1024; // 200MB total per Google account (flexible: one big memo or many small ones)
+
+async function getCloudBytesUsed(uid){
+  const { db, firestoreMod } = await getFirestoreRef();
+  const snap = await firestoreMod.getDoc(firestoreMod.doc(db, 'users', uid));
+  return snap.exists() ? (snap.data().cloudBytesUsed || 0) : 0;
+}
+async function addCloudBytesUsed(uid, n){
+  const { db, firestoreMod } = await getFirestoreRef();
+  const ref = firestoreMod.doc(db, 'users', uid);
+  const current = await getCloudBytesUsed(uid);
+  await firestoreMod.setDoc(ref, { cloudBytesUsed: current + n }, { merge: true });
+}
+
+/* Text-only cloud memo — stored entirely in Firestore, no separate file storage needed */
+async function uploadMemoToCloud(id, text){
+  const { db, firestoreMod } = await getFirestoreRef();
+  await firestoreMod.setDoc(firestoreMod.doc(db, 'qrMemos', id), {
+    text: text || '',
+    createdAt: Date.now()
+  });
+}
+
+/* ---------- MEMO APP STATE ---------- */
+let viewingMemoId = null;
+
+const composeEl = document.getElementById('memo-compose');
+const viewerEl = document.getElementById('memo-viewer');
+const textEl = document.getElementById('memo-text');
+const statusEl = document.getElementById('memo-status');
+
+function resetCompose(){
+  textEl.value = '';
+  statusEl.textContent = '';
+}
+
+document.getElementById('memo-new').addEventListener('click', ()=>{
+  viewingMemoId = null;
+  resetCompose();
+  composeEl.classList.remove('hidden');
+  viewerEl.classList.add('hidden');
+  document.querySelectorAll('.memo-list-item').forEach(el=>el.classList.remove('active'));
+});
+
+/* ---------- SAVE FLOW ---------- */
+document.getElementById('memo-save-btn').addEventListener('click', ()=>{
+  if(!textEl.value.trim()){
+    statusEl.textContent = 'Write something first.';
+    return;
+  }
+  document.getElementById('memo-save-popover').classList.remove('hidden');
+});
+document.getElementById('memo-popover-close').addEventListener('click', ()=>{
+  document.getElementById('memo-save-popover').classList.add('hidden');
+});
+
+document.getElementById('memo-save-to-list').addEventListener('click', async ()=>{
+  const memo = {
+    id: genId(),
+    createdAt: Date.now(),
+    text: textEl.value
+  };
+  await dbPut('memos', memo);
+  document.getElementById('memo-save-popover').classList.add('hidden');
+  resetCompose();
+  await refreshSidebar();
+  openMemoInViewer(memo);
+});
+
+document.getElementById('memo-generate-qr').addEventListener('click', async ()=>{
+  document.getElementById('memo-save-popover').classList.add('hidden');
+  const id = genId();
+  const text = textEl.value;
+  const textBytes = new Blob([text]).size;
+
+  let user;
+  try{
+    statusEl.textContent = 'Sharing via QR needs a quick Google sign-in (only once)…';
+    user = await ensureSignedIn();
+  } catch(err){
+    statusEl.textContent = 'Sign-in was cancelled or failed. Try again.';
+    return;
+  }
+
+  statusEl.textContent = 'Checking your storage…';
+  const used = await getCloudBytesUsed(user.uid);
+  if(used + textBytes > MAX_CLOUD_BYTES_PER_ACCOUNT){
+    statusEl.innerHTML = 'You\'ve used your free 200MB of shareable (QR) storage. <a href="index.html" style="color:var(--brass-dim);">Upgrade for more space →</a>';
+    return;
+  }
+
+  statusEl.textContent = 'Saving so this can be opened on any device… please wait.';
+  try{
+    await uploadMemoToCloud(id, text);
+    await addCloudBytesUsed(user.uid, textBytes);
+    resetCompose();
+    location.href = 'qr-generator.html?memo=' + encodeURIComponent(id);
+  } catch(err){
+    statusEl.textContent = 'Could not upload this memo (' + (err && err.message ? err.message : 'check your internet connection') + '). Try again.';
+    console.error(err);
+  }
+});
+
+/* ---------- SIDEBAR + VIEWER ---------- */
+async function refreshSidebar(){
+  const listEl = document.getElementById('memo-list');
+  const memos = await dbGetAll('memos');
+  memos.sort((a,b)=> b.createdAt - a.createdAt);
+  if(memos.length === 0){
+    listEl.innerHTML = '<p class="memo-empty-note">No memos yet.</p>';
+    return;
+  }
+  listEl.innerHTML = '';
+  memos.forEach(memo=>{
+    const item = document.createElement('div');
+    item.className = 'memo-list-item' + (memo.id === viewingMemoId ? ' active' : '');
+    const snippet = memo.text && memo.text.trim() ? memo.text.trim().slice(0,60) : '[Empty]';
+    const date = new Date(memo.createdAt).toLocaleString();
+    item.innerHTML = `<div class="snippet">${snippet.replace(/</g,'&lt;')}</div><div class="meta">${date}</div>`;
+    item.addEventListener('click', ()=> openMemoInViewer(memo));
+    listEl.appendChild(item);
+  });
+}
+
+function openMemoInViewer(memo){
+  viewingMemoId = memo.id;
+  composeEl.classList.add('hidden');
+  viewerEl.classList.remove('hidden');
+  document.getElementById('memo-viewer-date').textContent = new Date(memo.createdAt).toLocaleString();
+  document.getElementById('memo-viewer-text').textContent = memo.text || '';
+  document.querySelectorAll('.memo-list-item').forEach(el=>el.classList.remove('active'));
+  refreshSidebar();
+}
+
+document.getElementById('memo-viewer-delete').addEventListener('click', async ()=>{
+  if(!viewingMemoId) return;
+  if(!confirm('Delete this memo? This cannot be undone.')) return;
+  await dbDelete('memos', viewingMemoId);
+  viewingMemoId = null;
+  viewerEl.classList.add('hidden');
+  composeEl.classList.remove('hidden');
+  resetCompose();
+  await refreshSidebar();
+});
+
+document.getElementById('memo-viewer-qr').addEventListener('click', async (e)=>{
+  if(!viewingMemoId) return;
+  const memo = await dbGet('memos', viewingMemoId);
+  if(!memo) return;
+  const id = genId();
+  const textBytes = new Blob([memo.text || '']).size;
+
+  const statusMsg = document.createElement('p');
+  statusMsg.style.cssText = "font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--slate); margin-top:10px;";
+  e.target.insertAdjacentElement('afterend', statusMsg);
+
+  let user;
+  try{
+    statusMsg.textContent = 'Sharing via QR needs a quick Google sign-in (only once)…';
+    user = await ensureSignedIn();
+  } catch(err){
+    statusMsg.textContent = 'Sign-in was cancelled or failed. Try again.';
+    return;
+  }
+
+  statusMsg.textContent = 'Checking your storage…';
+  const used = await getCloudBytesUsed(user.uid);
+  if(used + textBytes > MAX_CLOUD_BYTES_PER_ACCOUNT){
+    statusMsg.innerHTML = 'You\'ve used your free 200MB of shareable (QR) storage. <a href="index.html" style="color:var(--brass-dim);">Upgrade for more space →</a>';
+    return;
+  }
+
+  statusMsg.textContent = 'Saving so this can be opened on any device… please wait.';
+  try{
+    await uploadMemoToCloud(id, memo.text);
+    await addCloudBytesUsed(user.uid, textBytes);
+    location.href = 'qr-generator.html?memo=' + encodeURIComponent(id);
+  } catch(err){
+    statusMsg.textContent = 'Could not upload this memo (' + (err && err.message ? err.message : 'check your internet connection') + '). Try again.';
+    console.error(err);
+  }
+});
+
+/* ---------- INIT ---------- */
+refreshSidebar();
+</script>
+
+</body>
+</html>

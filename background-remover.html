@@ -85,8 +85,9 @@ async function handleBgFile(file){
     document.getElementById('bg-download').classList.add('hidden');
     statusEl.textContent = 'Loading model and removing background (first time can take up to a minute)…';
     try{
-      const { removeBackground } = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/browser.mjs');
-      const blob = await removeBackground(file);
+      const mod = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/dist/browser.mjs');
+      const imglyRemoveBackground = mod.default;
+      const blob = await imglyRemoveBackground(file);
       if(!blob || blob.size === 0){
         throw new Error('Empty result');
       }

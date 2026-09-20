@@ -17,7 +17,7 @@
 
 <div id="home-view">
   <div class="logo">
-    <div class="logo-mark"></div>
+    <img src="favicon.svg" alt="Forge" class="logo-mark-img">
     <div class="logo-text">FORGE<span>.</span></div>
   </div>
 
@@ -32,10 +32,18 @@
         <svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10" stroke-linecap="round"/></svg>
         <div class="name">Word Counter</div>
       </a>
-      <a class="tool-card card-2" href="qr-generator.html">
+      <div class="tool-card card-2" id="qr-card-trigger" role="button" tabindex="0">
         <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z" stroke="none" fill="currentColor"/></svg>
-        <div class="name">QR Generator</div>
-      </a>
+        <div class="name">QR Code</div>
+      </div>
+      <div id="qr-choice-popover" class="hidden popover-overlay">
+        <div class="popover-box">
+          <h3>QR Code</h3>
+          <a class="action brass" href="qr-generator.html" style="display:block; text-decoration:none; box-sizing:border-box;">Generate QR code</a>
+          <a class="action" href="scan.html" style="display:block; text-decoration:none; box-sizing:border-box; margin-top:10px;">Scan</a>
+          <button class="popover-close" id="qr-choice-close" style="margin-top:14px;">Cancel</button>
+        </div>
+      </div>
       <a class="tool-card card-3" href="password-generator.html">
         <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke-linecap="round"/></svg>
         <div class="name">Password Generator</div>
@@ -56,9 +64,22 @@
         <svg class="icon" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.6"/><circle cx="6" cy="18" r="2.6"/><path d="M20.5 4.5L8.5 14.5M14.8 14.3l5.7 5.7M8.5 9.5l3 2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <div class="name">Background Remover</div>
       </a>
+      <a class="tool-card card-8" href="memo.html">
+        <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4" stroke-linecap="round"/></svg>
+        <div class="name">Memo</div>
+      </a>
     </div>
   </div>
 </div>
+
+<script>
+const qrTrigger = document.getElementById('qr-card-trigger');
+const qrPopover = document.getElementById('qr-choice-popover');
+qrTrigger.addEventListener('click', ()=> qrPopover.classList.remove('hidden'));
+qrTrigger.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') qrPopover.classList.remove('hidden'); });
+document.getElementById('qr-choice-close').addEventListener('click', ()=> qrPopover.classList.add('hidden'));
+qrPopover.addEventListener('click', (e)=>{ if(e.target === qrPopover) qrPopover.classList.add('hidden'); });
+</script>
 
 </body>
 </html>

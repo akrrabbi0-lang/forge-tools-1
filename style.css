@@ -50,20 +50,11 @@
     gap:10px;
     z-index:5;
   }
-  .logo-mark{
-    width:30px; height:30px;
-    background:linear-gradient(135deg, var(--brass), var(--brass-dim));
-    border-radius:6px;
-    position:relative;
+  .logo-mark-img{
+    width:34px; height:34px;
+    border-radius:8px;
     flex-shrink:0;
-  }
-  .logo-mark::before{
-    content:"";
-    position:absolute;
-    top:50%; left:50%;
-    width:12px; height:12px;
-    background:var(--ink);
-    transform:translate(-50%,-50%) rotate(45deg);
+    display:block;
   }
   .logo-text{
     font-family:'Space Grotesk', sans-serif;
@@ -157,6 +148,8 @@
   .card-6:hover{ box-shadow:0 14px 32px -8px rgba(255,201,60,0.55); }
   .card-7{ background:radial-gradient(circle at 32% 28%, #FF5163, #B3212F); }
   .card-7:hover{ box-shadow:0 14px 32px -8px rgba(255,81,99,0.55); }
+  .card-8{ background:radial-gradient(circle at 32% 28%, #2FE6B8, #1C3A8C); }
+  .card-8:hover{ box-shadow:0 14px 32px -8px rgba(47,230,184,0.55); }
 
   /* ============ TOOL VIEW ============ */
   #tool-view{
@@ -344,6 +337,24 @@
   @media(max-width:640px){
     .home-center{ padding-top:96px; }
     .tool-body{ padding:32px 20px 80px; }
+
+    /* Force a clean 4-per-row grid on phones, regardless of card count */
+    .card-grid{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:10px;
+      max-width:100%;
+      width:100%;
+      padding:0 4px;
+    }
+    .tool-card{
+      width:100%;
+      height:auto;
+      aspect-ratio:1/1;
+      padding:6px;
+    }
+    .tool-card .icon{ width:20px; height:20px; }
+    .tool-card .name{ font-size:9.5px; line-height:1.15; }
   }
 
 /* Standalone tool page (multi-page site) */
@@ -354,3 +365,38 @@ body.tool-page{
 .tool-panel{ display:block; }
 a.back-btn{ text-decoration:none; }
 a.tool-card{ text-decoration:none; }
+
+/* Shared popover/modal (used on home page QR choice, and inside Memo) */
+.popover-overlay{
+  position:fixed; inset:0;
+  background:rgba(14,15,20,0.55);
+  display:flex; align-items:center; justify-content:center;
+  z-index:50;
+}
+.popover-box{
+  background:var(--paper);
+  border-radius:6px;
+  padding:32px;
+  width:min(360px, 90vw);
+  text-align:center;
+}
+.popover-box h3{
+  font-family:'Space Grotesk', sans-serif;
+  font-size:19px;
+  margin-bottom:20px;
+  color:var(--ink);
+}
+.popover-box button, .popover-box a.action{
+  width:100%;
+  margin-bottom:10px;
+  text-align:center;
+}
+.popover-close{
+  background:none !important;
+  color:var(--slate) !important;
+  font-size:13px;
+  padding:6px !important;
+  border:none;
+  cursor:pointer;
+  font-family:'Inter', sans-serif;
+}

@@ -27,49 +27,19 @@
 <div class="tool-body">
 <section class="tool-panel" id="tool-audio">
       <h2>Video to Audio Converter</h2>
-      <p class="desc">Upload a video file and pull out the audio as an MP3. The conversion runs entirely in your browser — the file never leaves your device. The converter engine (~25MB) loads once, the first time you use it.</p>
+      <p class="desc">Upload a video file and pull out the audio as a WAV file. Uses your browser's built-in audio engine — no external library to load, and the file never leaves your device.</p>
       <div class="drop-zone" id="audio-drop">Click to choose a video file, or drag one here</div>
       <input type="file" id="audio-file" accept="video/*" class="hidden">
       <p id="audio-filename" style="font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate); margin-bottom:16px;"></p>
-      <button class="action brass hidden" id="audio-convert">Convert to MP3</button>
+      <button class="action brass hidden" id="audio-convert">Extract audio</button>
       <p id="audio-status" style="margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate);"></p>
-      <button class="action hidden" id="audio-download" style="margin-top:12px;">Download MP3</button>
+      <button class="action hidden" id="audio-download" style="margin-top:12px;">Download WAV</button>
     </section>
 </div>
 
 <script>
-/* ---------- AUDIO CONVERTER (video -> mp3, via ffmpeg.wasm) ---------- */
-let ffmpegInstance = null;
+/* ---------- AUDIO CONVERTER (video -> WAV, pure Web Audio API, no external library) ---------- */
 let audioFile = null;
-
-function loadScript(src){
-  return new Promise((resolve, reject)=>{
-    const s = document.createElement('script');
-    s.src = src;
-    s.onload = resolve;
-    s.onerror = ()=> reject(new Error('Failed to load ' + src));
-    document.head.appendChild(s);
-  });
-}
-
-async function getFFmpeg(){
-  if(ffmpegInstance) return ffmpegInstance;
-  if(typeof FFmpeg === 'undefined'){
-    await loadScript('https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js');
-  }
-  const { createFFmpeg } = FFmpeg;
-  // Multi-threaded core: much faster, handles bigger files better.
-  // Requires the page to be served with COOP/COEP headers (see hosting instructions).
-  const crossOriginIsolated = window.crossOriginIsolated === true;
-  ffmpegInstance = createFFmpeg({
-    log:false,
-    corePath: crossOriginIsolated
-      ? 'https://unpkg.com/@ffmpeg/core-mt@0.11.0/dist/ffmpeg-core.js'
-      : 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'
-  });
-  await ffmpegInstance.load();
-  return ffmpegInstance;
-}
 
 const audioDrop = document.getElementById('audio-drop');
 const audioFileInput = document.getElementById('audio-file');
@@ -91,11 +61,58 @@ function handleAudioFile(file){
   document.getElementById('audio-convert').classList.remove('hidden');
   document.getElementById('audio-download').classList.add('hidden');
   const statusEl = document.getElementById('audio-status');
-  if(sizeMB > 300){
-    statusEl.textContent = 'This file is quite large for browser-based conversion. It may be slow or fail — a file under 300MB works best (or under 100MB if you have not enabled the fast multi-thread mode).';
+  if(sizeMB > 500){
+    statusEl.textContent = 'This file is quite large — your browser may run out of memory. A file under 300MB works best.';
   } else {
     statusEl.textContent = '';
   }
+}
+
+// Encode a decoded AudioBuffer into a 16-bit PCM WAV Blob
+function audioBufferToWav(buffer){
+  const numChannels = buffer.numberOfChannels;
+  const sampleRate = buffer.sampleRate;
+  const numFrames = buffer.length;
+  const bytesPerSample = 2;
+  const blockAlign = numChannels * bytesPerSample;
+  const dataSize = numFrames * blockAlign;
+  const bufferSize = 44 + dataSize;
+
+  const arrayBuffer = new ArrayBuffer(bufferSize);
+  const view = new DataView(arrayBuffer);
+
+  function writeString(offset, str){
+    for(let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i));
+  }
+
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + dataSize, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true); // PCM
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * blockAlign, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, 16, true);
+  writeString(36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  const channelData = [];
+  for(let ch=0; ch<numChannels; ch++) channelData.push(buffer.getChannelData(ch));
+
+  let offset = 44;
+  for(let i=0; i<numFrames; i++){
+    for(let ch=0; ch<numChannels; ch++){
+      let sample = Math.max(-1, Math.min(1, channelData[ch][i]));
+      sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+      view.setInt16(offset, sample, true);
+      offset += 2;
+    }
+  }
+
+  return new Blob([arrayBuffer], { type: 'audio/wav' });
 }
 
 let audioResultUrl = null;
@@ -104,35 +121,36 @@ document.getElementById('audio-convert').addEventListener('click', async ()=>{
   const statusEl = document.getElementById('audio-status');
   const btn = document.getElementById('audio-convert');
   btn.disabled = true;
-  if(!window.WebAssembly){
-    statusEl.textContent = 'Your browser does not support WebAssembly, which this tool needs. Try an up-to-date Chrome, Firefox, or Edge.';
+
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if(!AudioCtx){
+    statusEl.textContent = 'Your browser does not support the Web Audio API needed for this tool. Try an up-to-date Chrome, Firefox, or Edge.';
     btn.disabled = false;
     return;
   }
+
   try{
-    statusEl.textContent = 'Loading converter engine (first time only, ~25MB)…';
-    const ffmpeg = await getFFmpeg();
-    ffmpeg.setProgress(({ ratio }) => {
-      if(ratio >= 0 && ratio <= 1){
-        statusEl.textContent = `Converting… ${Math.round(ratio*100)}%`;
+    statusEl.textContent = 'Reading file…';
+    const arrayBuffer = await audioFile.arrayBuffer();
+
+    statusEl.textContent = 'Decoding audio track…';
+    const audioCtx = new AudioCtx();
+    const decoded = await new Promise((resolve, reject)=>{
+      // decodeAudioData supports both promise and legacy callback forms; using both for max compatibility
+      const maybePromise = audioCtx.decodeAudioData(arrayBuffer.slice(0), resolve, reject);
+      if(maybePromise && typeof maybePromise.then === 'function'){
+        maybePromise.then(resolve).catch(reject);
       }
     });
-    statusEl.textContent = 'Converting… this can take a minute for larger files.';
-    const { fetchFile } = FFmpeg;
-    const ext = (audioFile.name.match(/\.[0-9a-z]+$/i) || ['.mp4'])[0];
-    const inputName = 'input' + ext;
-    ffmpeg.FS('writeFile', inputName, await fetchFile(audioFile));
-    await ffmpeg.run('-i', inputName, '-q:a', '2', '-map', 'a', 'output.mp3');
-    const data = ffmpeg.FS('readFile', 'output.mp3');
-    if(!data || !data.buffer || data.buffer.byteLength === 0){
-      throw new Error('Empty output — this video may not have an audio track.');
-    }
-    const blob = new Blob([data.buffer], { type: 'audio/mp3' });
+
+    statusEl.textContent = 'Encoding WAV file…';
+    const blob = audioBufferToWav(decoded);
     audioResultUrl = URL.createObjectURL(blob);
-    statusEl.textContent = 'Done — your MP3 is ready.';
+    statusEl.textContent = `Done — extracted ${decoded.duration.toFixed(1)}s of audio.`;
     document.getElementById('audio-download').classList.remove('hidden');
+    audioCtx.close();
   } catch(err){
-    statusEl.textContent = 'Conversion failed: ' + (err.message || 'unknown error') + '. Try a smaller file or a different format (MP4 works best).';
+    statusEl.textContent = 'Could not extract audio from this file (' + (err && err.message ? err.message : 'unsupported format') + '). Try a standard MP4 or MOV video.';
     console.error(err);
   }
   btn.disabled = false;
@@ -140,7 +158,7 @@ document.getElementById('audio-convert').addEventListener('click', async ()=>{
 document.getElementById('audio-download').addEventListener('click', ()=>{
   if(!audioResultUrl) return;
   const link = document.createElement('a');
-  link.download = 'converted-audio.mp3';
+  link.download = 'extracted-audio.wav';
   link.href = audioResultUrl;
   link.click();
 });

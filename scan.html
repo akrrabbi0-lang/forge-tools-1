@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="shortcut icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scan a QR Code — Forge</title>
+<meta name="description" content="Scan a QR code using your camera or by uploading an image, for free, right in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
+<style>
+  #scan-video{ width:100%; max-width:420px; border-radius:6px; display:none; background:#000; }
+  #scan-canvas{ display:none; }
+  .scan-result{
+    margin-top:24px;
+    padding:20px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:var(--paper-dim);
+  }
+  .memo-viewer-media{ display:flex; flex-wrap:wrap; gap:12px; margin:16px 0; }
+  .memo-viewer-media img, .memo-viewer-media video{ max-width:260px; max-height:260px; border:1px solid var(--line); border-radius:4px; }
+</style>
+</head>
+<body class="tool-page">
+
+<div class="tool-topbar">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Home
+  </a>
+  <span class="tt-name">Scan</span>
+</div>
+
+<div class="tool-body">
+  <section class="tool-panel">
+    <h2>Scan a QR Code</h2>
+    <p class="desc">Upload an image of a QR code, or scan one with your camera.</p>
+
+    <div class="drop-zone" id="scan-drop">Click to choose an image, or drag one here</div>
+    <input type="file" id="scan-file-input" accept="image/*" class="hidden">
+
+    <div style="margin:20px 0;">
+      <button class="action" id="scan-camera-btn">Scan with camera</button>
+      <button class="action hidden" id="scan-camera-stop" style="background:var(--rust); color:#fff;">Stop camera</button>
+    </div>
+    <video id="scan-video" autoplay playsinline muted></video>
+    <canvas id="scan-canvas"></canvas>
+
+    <p id="scan-status" style="margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate);"></p>
+
+    <div id="scan-result" class="scan-result hidden"></div>
+  </section>
+</div>
+
+<script>
+/* ---------- SHARED INDEXEDDB HELPER (same schema as memo.html) ---------- */
+const MEMO_DB_NAME = 'forge-memo-db';
+const MEMO_DB_VERSION = 1;
+function openMemoDB(){
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open(MEMO_DB_NAME, MEMO_DB_VERSION);
+    req.onupgradeneeded = (e)=>{
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains('memos')) db.createObjectStore('memos', { keyPath: 'id' });
+      if(!db.objectStoreNames.contains('qrMemos')) db.createObjectStore('qrMemos', { keyPath: 'id' });
+    };
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+function dbGet(storeName, id){
+  return openMemoDB().then(db=> new Promise((resolve,reject)=>{
+    const tx = db.transaction(storeName,'readonly');
+    const req = tx.objectStore(storeName).get(id);
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  }));
+}
+
+/* ---------- FIREBASE (for cross-device memo QR codes) ---------- */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAySyWMbvRHmt6FpFnkybEJcJVAIfaCdgU",
+  authDomain: "forge-3f660.firebaseapp.com",
+  projectId: "forge-3f660",
+  storageBucket: "forge-3f660.firebasestorage.app",
+  messagingSenderId: "898806653462",
+  appId: "1:898806653462:web:051fbefac1425d712a4b37"
+};
+const FIREBASE_SDK_VERSION = "12.19.0";
+let _fb = null;
+async function getFirebase(){
+  if(_fb) return _fb;
+  const { initializeApp } = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-app.js`);
+  const firestoreMod = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-firestore.js`);
+  const app = initializeApp(FIREBASE_CONFIG);
+  const db = firestoreMod.getFirestore(app);
+  _fb = { app, db, firestoreMod };
+  return _fb;
+}
+
+/* ---------- RESULT HANDLING ---------- */
+const statusEl = document.getElementById('scan-status');
+const resultEl = document.getElementById('scan-result');
+
+function renderMemoContent(text, mediaItems){
+  // mediaItems: array of either {type, url} (from cloud) or {type, blob} (from local fallback)
+  let html = '<h3 style="font-family:\'Space Grotesk\',sans-serif; margin-bottom:12px;">Memo</h3>';
+  if(text){
+    html += `<div style="white-space:pre-wrap; font-size:15px; line-height:1.6;">${text.replace(/</g,'&lt;')}</div>`;
+  }
+  resultEl.innerHTML = html;
+  const mediaWrap = document.createElement('div');
+  mediaWrap.className = 'memo-viewer-media';
+  (mediaItems || []).forEach(m=>{
+    const src = m.url || (m.blob ? URL.createObjectURL(m.blob) : null);
+    if(!src) return;
+    if(m.type.startsWith('image/')){
+      const img = document.createElement('img');
+      img.src = src;
+      mediaWrap.appendChild(img);
+    } else {
+      const vid = document.createElement('video');
+      vid.src = src;
+      vid.controls = true;
+      mediaWrap.appendChild(vid);
+    }
+  });
+  resultEl.appendChild(mediaWrap);
+}
+
+async function handleDecodedText(text){
+  resultEl.classList.remove('hidden');
+  const MEMO_PREFIX = 'FORGEMEMO:v1:';
+  if(text.startsWith(MEMO_PREFIX)){
+    const id = text.slice(MEMO_PREFIX.length);
+    statusEl.textContent = 'Found a Forge memo QR code — fetching…';
+    try{
+      const { db, firestoreMod } = await getFirebase();
+      const snap = await firestoreMod.getDoc(firestoreMod.doc(db, 'qrMemos', id));
+      if(snap.exists()){
+        const memo = snap.data();
+        renderMemoContent(memo.text, memo.media);
+        statusEl.textContent = 'Memo loaded.';
+        return;
+      }
+    } catch(err){
+      console.error(err);
+      // fall through to local fallback below
+    }
+    // Fallback: check this device's local storage (for older, pre-cloud QR codes)
+    const localMemo = await dbGet('qrMemos', id);
+    if(localMemo){
+      renderMemoContent(localMemo.text, localMemo.media);
+      statusEl.textContent = 'Memo loaded from this device.';
+    } else {
+      resultEl.innerHTML = '<p>This memo could not be found. It may have been deleted, the link may be invalid, or you may not have an internet connection.</p>';
+      statusEl.textContent = '';
+    }
+  } else {
+    // Ordinary QR code — behave like a normal QR reader
+    let html = `<h3 style="font-family:'Space Grotesk',sans-serif; margin-bottom:12px;">Scanned content</h3><p style="word-break:break-all;">${text.replace(/</g,'&lt;')}</p>`;
+    if(/^https?:\/\//i.test(text)){
+      html += `<a class="action brass" href="${text}" target="_blank" rel="noopener" style="display:inline-block; margin-top:12px; text-decoration:none;">Open link</a>`;
+    }
+    resultEl.innerHTML = html;
+    statusEl.textContent = 'QR code decoded.';
+  }
+}
+
+/* ---------- IMAGE UPLOAD SCAN ---------- */
+const scanDrop = document.getElementById('scan-drop');
+const scanFileInput = document.getElementById('scan-file-input');
+scanDrop.addEventListener('click', ()=> scanFileInput.click());
+scanDrop.addEventListener('dragover', e=>{ e.preventDefault(); scanDrop.classList.add('dragover'); });
+scanDrop.addEventListener('dragleave', ()=> scanDrop.classList.remove('dragover'));
+scanDrop.addEventListener('drop', e=>{
+  e.preventDefault();
+  scanDrop.classList.remove('dragover');
+  if(e.dataTransfer.files.length) decodeImageFile(e.dataTransfer.files[0]);
+});
+scanFileInput.addEventListener('change', e=>{
+  if(e.target.files.length) decodeImageFile(e.target.files[0]);
+});
+
+function decodeImageFile(file){
+  statusEl.textContent = 'Reading image…';
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = e=>{
+    img.onload = ()=>{
+      const canvas = document.getElementById('scan-canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      if(code){
+        handleDecodedText(code.data);
+      } else {
+        statusEl.textContent = 'No QR code found in that image. Try a clearer photo.';
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ---------- LIVE CAMERA SCAN ---------- */
+let cameraStream = null;
+let cameraLoopId = null;
+const video = document.getElementById('scan-video');
+const camBtn = document.getElementById('scan-camera-btn');
+const camStopBtn = document.getElementById('scan-camera-stop');
+
+camBtn.addEventListener('click', async ()=>{
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    statusEl.textContent = 'Your browser does not support camera access. Try uploading an image instead.';
+    return;
+  }
+  try{
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    video.srcObject = cameraStream;
+    video.style.display = 'block';
+    camBtn.classList.add('hidden');
+    camStopBtn.classList.remove('hidden');
+    statusEl.textContent = 'Point your camera at a QR code…';
+    scanLoop();
+  } catch(err){
+    statusEl.textContent = 'Could not access the camera (' + (err.message || 'permission denied') + '). Try uploading an image instead.';
+  }
+});
+
+function stopCamera(){
+  if(cameraLoopId) cancelAnimationFrame(cameraLoopId);
+  if(cameraStream){
+    cameraStream.getTracks().forEach(t=>t.stop());
+    cameraStream = null;
+  }
+  video.style.display = 'none';
+  camBtn.classList.remove('hidden');
+  camStopBtn.classList.add('hidden');
+}
+camStopBtn.addEventListener('click', stopCamera);
+
+function scanLoop(){
+  const canvas = document.getElementById('scan-canvas');
+  const ctx = canvas.getContext('2d');
+  function tick(){
+    if(video.readyState === video.HAVE_ENOUGH_DATA){
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      if(code){
+        handleDecodedText(code.data);
+        stopCamera();
+        return;
+      }
+    }
+    cameraLoopId = requestAnimationFrame(tick);
+  }
+  tick();
+}
+</script>
+
+</body>
+</html>

@@ -27,12 +27,12 @@
 <div class="tool-body">
 <section class="tool-panel" id="tool-qr">
       <h2>QR Code Generator</h2>
-      <p class="desc">Type a link or any text, and a scannable QR code appears instantly.</p>
-      <div class="field">
+      <p class="desc" id="qr-desc">Type a link or any text, and a scannable QR code appears instantly.</p>
+      <div class="field" id="qr-input-field">
         <label>Link or text</label>
         <input type="text" id="qr-input" placeholder="https://example.com">
       </div>
-      <div class="row" style="margin-bottom:8px;">
+      <div class="row" style="margin-bottom:8px;" id="qr-size-field">
         <div class="field" style="max-width:180px;">
           <label>Size (px)</label>
           <select id="qr-size">
@@ -48,15 +48,13 @@
       <div style="margin-top:16px;">
         <button class="action hidden" id="qr-download">Download PNG</button>
       </div>
+      <p id="qr-back-link" class="hidden" style="margin-top:20px;"><a href="qr-generator.html" style="color:var(--brass-dim); font-family:'Space Grotesk',sans-serif; font-weight:500;">Make a different QR code →</a></p>
     </section>
 </div>
 
 <script>
 /* ---------- QR GENERATOR ---------- */
-document.getElementById('qr-generate').addEventListener('click', ()=>{
-  const val = document.getElementById('qr-input').value.trim();
-  if(!val) return;
-  const size = parseInt(document.getElementById('qr-size').value);
+function renderQr(val, size){
   const wrap = document.getElementById('qr-canvas');
   wrap.innerHTML = '';
   new QRCode(wrap, {
@@ -68,6 +66,13 @@ document.getElementById('qr-generate').addEventListener('click', ()=>{
   });
   document.getElementById('qr-canvas-wrap').classList.remove('hidden');
   document.getElementById('qr-download').classList.remove('hidden');
+}
+
+document.getElementById('qr-generate').addEventListener('click', ()=>{
+  const val = document.getElementById('qr-input').value.trim();
+  if(!val) return;
+  const size = parseInt(document.getElementById('qr-size').value);
+  renderQr(val, size);
 });
 document.getElementById('qr-download').addEventListener('click', ()=>{
   const canvas = document.querySelector('#qr-canvas canvas');
@@ -78,6 +83,20 @@ document.getElementById('qr-download').addEventListener('click', ()=>{
   link.click();
 });
 
+/* If arriving from a Memo's "Generate QR code" action, auto-render a QR
+   for that memo without exposing the internal link format to the user. */
+(function(){
+  const params = new URLSearchParams(location.search);
+  const memoId = params.get('memo');
+  if(memoId){
+    document.getElementById('qr-desc').textContent = 'Scan this with the Scan tool on this site to open the memo on this device.';
+    document.getElementById('qr-input-field').classList.add('hidden');
+    document.getElementById('qr-size-field').classList.add('hidden');
+    document.getElementById('qr-generate').classList.add('hidden');
+    document.getElementById('qr-back-link').classList.remove('hidden');
+    renderQr('FORGEMEMO:v1:' + memoId, 300);
+  }
+})();
 </script>
 
 </body>
