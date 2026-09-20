@@ -33,6 +33,7 @@
       <p id="audio-filename" style="font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate); margin-bottom:16px;"></p>
       <button class="action brass hidden" id="audio-convert">Extract audio</button>
       <p id="audio-status" style="margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate);"></p>
+      <audio id="audio-preview" controls class="hidden" style="width:100%; max-width:420px; margin-top:12px; display:block;"></audio>
       <button class="action hidden" id="audio-download" style="margin-top:12px;">Download WAV</button>
     </section>
 </div>
@@ -60,6 +61,7 @@ function handleAudioFile(file){
   document.getElementById('audio-filename').textContent = `Selected: ${file.name} (${sizeMB.toFixed(1)} MB)`;
   document.getElementById('audio-convert').classList.remove('hidden');
   document.getElementById('audio-download').classList.add('hidden');
+  document.getElementById('audio-preview').classList.add('hidden');
   const statusEl = document.getElementById('audio-status');
   if(sizeMB > 500){
     statusEl.textContent = 'This file is quite large — your browser may run out of memory. A file under 300MB works best.';
@@ -147,6 +149,9 @@ document.getElementById('audio-convert').addEventListener('click', async ()=>{
     const blob = audioBufferToWav(decoded);
     audioResultUrl = URL.createObjectURL(blob);
     statusEl.textContent = `Done — extracted ${decoded.duration.toFixed(1)}s of audio.`;
+    const previewEl = document.getElementById('audio-preview');
+    previewEl.src = audioResultUrl;
+    previewEl.classList.remove('hidden');
     document.getElementById('audio-download').classList.remove('hidden');
     audioCtx.close();
   } catch(err){

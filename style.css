@@ -63,7 +63,7 @@
     letter-spacing:-0.01em;
     color:var(--paper);
   }
-  .logo-text span{ color:var(--brass); }
+  .logo-text span{ color: inherit; }
 
   .home-center{
     flex:1;
@@ -244,7 +244,10 @@
   .row{ display:flex; gap:20px; flex-wrap:wrap; }
   .row > .field{ flex:1; min-width:160px; }
 
-  button.action{
+  button.action, a.action{
+    display:inline-block;
+    text-decoration:none;
+    box-sizing:border-box;
     font-family:'Space Grotesk', sans-serif;
     font-weight:600;
     font-size:15px;
@@ -256,10 +259,10 @@
     border-radius:2px;
     transition:background .15s ease, transform .1s ease;
   }
-  button.action:hover{ background:var(--ink-soft); }
-  button.action:active{ transform:scale(0.98); }
-  button.action.brass{ background:var(--brass); color:var(--ink); }
-  button.action.brass:hover{ background:var(--brass-dim); color:var(--paper); }
+  button.action:hover, a.action:hover{ background:var(--ink-soft); }
+  button.action:active, a.action:active{ transform:scale(0.98); }
+  button.action.brass, a.action.brass{ background:var(--brass); color:var(--ink); }
+  button.action.brass:hover, a.action.brass:hover{ background:var(--brass-dim); color:var(--paper); }
 
   .stats{
     display:grid;
