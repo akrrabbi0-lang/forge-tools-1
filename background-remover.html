@@ -3,16 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="shortcut icon" href="favicon.ico">
 <link rel="icon" type="image/png" href="favicon.png">
+<link rel="shortcut icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Free Background Remover Online — AI Powered | Forge</title>
-<meta name="description" content="Remove the background from any photo for free using an AI model that runs in your browser. No upload to a server, no sign-up, no watermark.">
-<link rel="canonical" href="https://REPLACE_WITH_YOUR_DOMAIN/background-remover.html">
+<title>Free Background Remover Online | Forge</title>
+<meta name="description" content="Remove the background from any photo for free, entirely in your browser. Click the background to pick its color, adjust two sliders, and download — no AI model to load, no upload to a server, works every time.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-
+<style>
+  #bgc-canvas-wrap{
+    position:relative;
+    display:inline-block;
+    max-width:100%;
+    background-image:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%);
+    background-size:16px 16px;
+    background-position:0 0,0 8px,8px -8px,-8px 0px;
+    border:1px solid var(--line);
+    border-radius:4px;
+  }
+  #bgc-canvas{
+    display:block;
+    max-width:100%;
+    height:auto;
+    cursor:crosshair;
+  }
+  .bgc-swatch{
+    display:inline-block;
+    width:22px; height:22px;
+    border-radius:4px;
+    border:1px solid var(--line);
+    vertical-align:middle;
+    margin-left:8px;
+  }
+  .bgc-slider-row{ margin-bottom:20px; }
+  .bgc-slider-row label{
+    display:flex;
+    justify-content:space-between;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--brass-dim);
+    margin-bottom:8px;
+  }
+  input[type=range].bgc-range{ width:100%; accent-color:var(--brass); }
+</style>
 </head>
 <body class="tool-page">
 
@@ -26,34 +60,53 @@
 
 <div class="tool-body">
 <section class="tool-panel" id="tool-bgremove">
-      <h2>Background Remover</h2>
-      <p class="desc">Upload an image and get it back with the background stripped out. Runs on an AI model loaded into your browser — nothing is uploaded to a server. Works best on photos with a clear subject (people, products, animals).</p>
+  <h2>Background Remover</h2>
+  <p class="desc">Upload a photo, then click anywhere on its background to pick that color. Everything runs instantly in your browser — no AI model to download, no server, no waiting. Works best when the background is a fairly solid color (plain wall, studio backdrop, white/plain surface).</p>
 
-      <div class="drop-zone" id="bg-drop">
-        <span id="bg-drop-label">Click to choose an image, or drag one here</span>
-        <img id="bg-preview-original" style="max-width:100%; max-height:320px; display:none; border-radius:4px;">
-      </div>
-      <input type="file" id="bg-file" accept="image/*" class="hidden">
+  <div class="drop-zone" id="bg-drop">
+    <span id="bg-drop-label">Click to choose an image, or drag one here</span>
+  </div>
+  <input type="file" id="bg-file" accept="image/*" class="hidden">
 
-      <div class="field" id="bg-result-field" style="margin-top:16px; display:none;">
-        <label>Result</label>
-        <img id="bg-preview-result" style="max-width:100%; max-height:320px; border:1px solid var(--line); border-radius:4px; background-image:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%); background-size:16px 16px; background-position:0 0,0 8px,8px -8px,-8px 0px;">
-      </div>
+  <div id="bg-editor" class="hidden" style="margin-top:20px;">
+    <div id="bgc-canvas-wrap">
+      <canvas id="bgc-canvas"></canvas>
+    </div>
+    <p style="margin:10px 0 20px; font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--slate);">
+      Picked color: <span class="bgc-swatch" id="bgc-swatch"></span>
+      <span id="bgc-hint">— click the background in the image above to set it</span>
+    </p>
 
-      <p id="bg-status" style="margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate);"></p>
-      <button class="action hidden" id="bg-download" style="margin-top:12px;">Download PNG</button>
-      <div style="margin-top:20px;">
-        <button class="action" id="bg-back-btn">← Back</button>
-      </div>
-    </section>
+    <div class="bgc-slider-row">
+      <label><span>Tolerance (how close a color must be to count as background)</span><span id="bgc-tol-val">40</span></label>
+      <input type="range" class="bgc-range" id="bgc-tolerance" min="5" max="150" value="40">
+    </div>
+    <div class="bgc-slider-row">
+      <label><span>Edge softness</span><span id="bgc-feather-val">25</span></label>
+      <input type="range" class="bgc-range" id="bgc-feather" min="0" max="80" value="25">
+    </div>
+
+    <button class="action" id="bg-back-btn">← Back</button>
+    <button class="action hidden brass" id="bg-download" style="margin-left:10px;">Download PNG</button>
+    <p id="bg-status" style="margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate);"></p>
+  </div>
+</section>
 </div>
 
 <script>
-/* ---------- BACKGROUND REMOVER (client-side AI model) ---------- */
+const MAX_DIM = 1600; // cap processing size for performance
+
+let originalImg = null;
+let sourceCanvas = document.createElement('canvas'); // holds the untouched, resized source pixels
+let seedColor = null; // [r,g,b]
 let bgFile = null;
-let bgResultUrl = null;
+
 const bgDrop = document.getElementById('bg-drop');
 const bgFileInput = document.getElementById('bg-file');
+const canvas = document.getElementById('bgc-canvas');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
+const statusEl = document.getElementById('bg-status');
+
 bgDrop.addEventListener('click', ()=> bgFileInput.click());
 bgDrop.addEventListener('dragover', e=>{ e.preventDefault(); bgDrop.classList.add('dragover'); });
 bgDrop.addEventListener('dragleave', ()=> bgDrop.classList.remove('dragover'));
@@ -66,76 +119,257 @@ bgFileInput.addEventListener('change', e=>{
   if(e.target.files.length) handleBgFile(e.target.files[0]);
 });
 
-async function handleBgFile(file){
-  bgFile = file;
-  const origImg = document.getElementById('bg-preview-original');
-  const dropLabel = document.getElementById('bg-drop-label');
-  const resultField = document.getElementById('bg-result-field');
-  const resultImg = document.getElementById('bg-preview-result');
-  const statusEl = document.getElementById('bg-status');
+function handleBgFile(file){
   const sizeMB = file.size/1024/1024;
-  if(sizeMB > 20){
-    statusEl.textContent = 'This image is quite large — try one under 15MB for best results.';
+  if(sizeMB > 25){
+    statusEl.textContent = 'This image is quite large — try one under 20MB.';
     return;
   }
-  if(!window.WebAssembly){
-    statusEl.textContent = 'Your browser does not support WebAssembly, which this tool needs. Try an up-to-date Chrome, Firefox, or Edge.';
-    return;
-  }
+  bgFile = file;
   const reader = new FileReader();
-  reader.onload = async e=>{
-    dropLabel.classList.add('hidden');
-    origImg.src = e.target.result;
-    origImg.style.display = 'block';
-    resultField.style.display = 'none';
-    document.getElementById('bg-download').classList.add('hidden');
-    statusEl.textContent = 'Loading model and removing background (first time can take up to a minute)…';
-    try{
-      let mod;
-      try{
-        mod = await import('https://unpkg.com/@imgly/background-removal@1.7.0/dist/index.mjs');
-      } catch(e1){
-        mod = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/dist/index.mjs');
+  reader.onload = e=>{
+    const img = new Image();
+    img.onload = ()=>{
+      originalImg = img;
+      let w = img.width, h = img.height;
+      if(w > MAX_DIM || h > MAX_DIM){
+        const scale = MAX_DIM / Math.max(w, h);
+        w = Math.round(w*scale);
+        h = Math.round(h*scale);
       }
-      const blob = await mod.removeBackground(file);
-      if(!blob || blob.size === 0){
-        throw new Error('Empty result');
-      }
-      bgResultUrl = URL.createObjectURL(blob);
-      resultImg.src = bgResultUrl;
-      resultField.style.display = 'block';
-      statusEl.textContent = 'Done.';
-      document.getElementById('bg-download').classList.remove('hidden');
-    } catch(err){
-      statusEl.textContent = 'Could not process this image (' + (err.message || 'unknown error') + '). Try a smaller photo or a different one.';
-      console.error(err);
-    }
+      sourceCanvas.width = w;
+      sourceCanvas.height = h;
+      const sctx = sourceCanvas.getContext('2d');
+      sctx.drawImage(img, 0, 0, w, h);
+
+      canvas.width = w;
+      canvas.height = h;
+      ctx.drawImage(sourceCanvas, 0, 0);
+
+      document.getElementById('bg-drop').classList.add('hidden');
+      document.getElementById('bg-editor').classList.remove('hidden');
+      document.getElementById('bg-download').classList.add('hidden');
+      statusEl.textContent = 'Auto-detecting background color…';
+
+      const auto = autoDetectBackground();
+      seedColor = auto.color;
+      tolSlider.value = auto.tolerance;
+      document.getElementById('bgc-tol-val').textContent = auto.tolerance;
+      document.getElementById('bgc-swatch').style.background = `rgb(${seedColor[0]},${seedColor[1]},${seedColor[2]})`;
+      document.getElementById('bgc-hint').textContent = '(auto-detected from the edges — click anywhere to pick a different spot)';
+      runRemoval();
+    };
+    img.onerror = ()=>{ statusEl.textContent = 'Could not load that image.'; };
+    img.src = e.target.result;
   };
+  reader.onerror = ()=>{ statusEl.textContent = 'Could not read that file.'; };
   reader.readAsDataURL(file);
 }
+
+/**
+ * Samples pixels around the border of the image, buckets similar colors together,
+ * and returns the most common bucket's average color as a background guess —
+ * plus a tolerance derived from how much that bucket's colors actually vary.
+ */
+function autoDetectBackground(){
+  const sctx = sourceCanvas.getContext('2d');
+  const w = sourceCanvas.width, h = sourceCanvas.height;
+  const data = sctx.getImageData(0, 0, w, h).data;
+  const step = Math.max(1, Math.floor(Math.min(w, h) / 120)); // sample density scales with image size
+  const samples = [];
+
+  function pushSample(x, y){
+    const idx = (y*w + x) * 4;
+    samples.push([data[idx], data[idx+1], data[idx+2]]);
+  }
+  for(let x=0; x<w; x+=step){ pushSample(x, 0); pushSample(x, h-1); }
+  for(let y=0; y<h; y+=step){ pushSample(0, y); pushSample(w-1, y); }
+
+  // bucket colors into coarse groups (round to nearest 16) to find the dominant one
+  const buckets = new Map();
+  for(const [r,g,b] of samples){
+    const key = [Math.round(r/16), Math.round(g/16), Math.round(b/16)].join(',');
+    if(!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push([r,g,b]);
+  }
+  let bestKey = null, bestCount = 0;
+  for(const [key, list] of buckets){
+    if(list.length > bestCount){ bestCount = list.length; bestKey = key; }
+  }
+  const bestList = buckets.get(bestKey);
+  const avg = bestList.reduce((a,c)=>[a[0]+c[0], a[1]+c[1], a[2]+c[2]], [0,0,0]).map(v=>v/bestList.length);
+
+  // tolerance: how far the bucket's own samples spread from their average, plus a safety margin
+  let maxDist = 0;
+  for(const [r,g,b] of bestList){
+    const d = Math.sqrt((r-avg[0])**2 + (g-avg[1])**2 + (b-avg[2])**2);
+    if(d > maxDist) maxDist = d;
+  }
+  const tolerance = Math.max(15, Math.min(120, Math.round(maxDist * 1.8 + 20)));
+
+  return { color: [Math.round(avg[0]), Math.round(avg[1]), Math.round(avg[2])], tolerance };
+}
+
+/** When the user clicks a spot, look at a small neighborhood around it to suggest
+ *  a tolerance that matches how "flat" or "noisy" that area of color actually is. */
+function suggestToleranceAt(x, y){
+  const sctx = sourceCanvas.getContext('2d');
+  const w = sourceCanvas.width, h = sourceCanvas.height;
+  const half = 6;
+  const x0 = Math.max(0, x-half), y0 = Math.max(0, y-half);
+  const x1 = Math.min(w, x+half), y1 = Math.min(h, y+half);
+  const region = sctx.getImageData(x0, y0, x1-x0, y1-y0).data;
+  let sr=0, sg=0, sb=0, count=0;
+  for(let i=0; i<region.length; i+=4){ sr+=region[i]; sg+=region[i+1]; sb+=region[i+2]; count++; }
+  const avg = [sr/count, sg/count, sb/count];
+  let maxDist = 0;
+  for(let i=0; i<region.length; i+=4){
+    const d = Math.sqrt((region[i]-avg[0])**2 + (region[i+1]-avg[1])**2 + (region[i+2]-avg[2])**2);
+    if(d > maxDist) maxDist = d;
+  }
+  return Math.max(15, Math.min(120, Math.round(maxDist * 1.8 + 20)));
+}
+
+canvas.addEventListener('click', (e)=>{
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const x = Math.floor((e.clientX - rect.left) * scaleX);
+  const y = Math.floor((e.clientY - rect.top) * scaleY);
+  const sctx = sourceCanvas.getContext('2d');
+  const pixel = sctx.getImageData(x, y, 1, 1).data;
+  seedColor = [pixel[0], pixel[1], pixel[2]];
+  const suggested = suggestToleranceAt(x, y);
+  tolSlider.value = suggested;
+  document.getElementById('bgc-tol-val').textContent = suggested;
+  document.getElementById('bgc-swatch').style.background = `rgb(${seedColor[0]},${seedColor[1]},${seedColor[2]})`;
+  document.getElementById('bgc-hint').textContent = '(click again anywhere to re-pick)';
+  runRemoval();
+});
+
+const tolSlider = document.getElementById('bgc-tolerance');
+const featherSlider = document.getElementById('bgc-feather');
+tolSlider.addEventListener('input', ()=>{
+  document.getElementById('bgc-tol-val').textContent = tolSlider.value;
+  if(seedColor) runRemoval();
+});
+featherSlider.addEventListener('input', ()=>{
+  document.getElementById('bgc-feather-val').textContent = featherSlider.value;
+  if(seedColor) runRemoval();
+});
+
+function runRemoval(){
+  if(!seedColor) return;
+  statusEl.textContent = 'Processing…';
+  // run on next tick so the "Processing…" text can paint first
+  setTimeout(()=>{
+    try{
+      const w = sourceCanvas.width, h = sourceCanvas.height;
+      const sctx = sourceCanvas.getContext('2d');
+      const srcData = sctx.getImageData(0, 0, w, h);
+      const outData = new ImageData(new Uint8ClampedArray(srcData.data), w, h);
+      chromaKeyFloodFill(outData, seedColor, parseInt(tolSlider.value), parseInt(featherSlider.value));
+      ctx.putImageData(outData, 0, 0);
+      canvas.toBlob(blob=>{
+        if(window.bgResultUrl) URL.revokeObjectURL(window.bgResultUrl);
+        window.bgResultUrl = URL.createObjectURL(blob);
+        document.getElementById('bg-download').classList.remove('hidden');
+        statusEl.textContent = 'Done — adjust the sliders above for a cleaner cut, or click a different spot.';
+      }, 'image/png');
+    } catch(err){
+      statusEl.textContent = 'Something went wrong processing this image (' + (err.message || 'unknown error') + ').';
+      console.error(err);
+    }
+  }, 10);
+}
+
+/**
+ * Removes background color, flood-filling only from the image border inward
+ * (so similarly-colored areas fully inside the subject are left alone),
+ * with a soft feathered edge where the cut meets the subject.
+ */
+function chromaKeyFloodFill(imageData, seed, tolerance, feather){
+  const { width, height, data } = imageData;
+  const n = width * height;
+  const [r0, g0, b0] = seed;
+  const isBg = new Uint8Array(n);
+
+  function dist(idx){
+    const o = idx * 4;
+    const dr = data[o] - r0, dg = data[o+1] - g0, db = data[o+2] - b0;
+    return Math.sqrt(dr*dr + dg*dg + db*db);
+  }
+
+  const queue = new Int32Array(n);
+  let qHead = 0, qTail = 0;
+
+  function trySeed(idx){
+    if(!isBg[idx] && dist(idx) <= tolerance){
+      isBg[idx] = 1;
+      queue[qTail++] = idx;
+    }
+  }
+
+  for(let x=0; x<width; x++){
+    trySeed(x);                          // top row
+    trySeed((height-1)*width + x);       // bottom row
+  }
+  for(let y=0; y<height; y++){
+    trySeed(y*width);                    // left col
+    trySeed(y*width + (width-1));        // right col
+  }
+
+  while(qHead < qTail){
+    const idx = queue[qHead++];
+    const x = idx % width, y = (idx / width) | 0;
+    if(x > 0) trySeed(idx - 1);
+    if(x < width - 1) trySeed(idx + 1);
+    if(y > 0) trySeed(idx - width);
+    if(y < height - 1) trySeed(idx + width);
+  }
+
+  // Apply hard mask, then feather the boundary ring
+  for(let idx = 0; idx < n; idx++){
+    const o = idx * 4;
+    if(isBg[idx]){
+      data[o+3] = 0;
+      continue;
+    }
+    if(feather > 0){
+      const d = dist(idx);
+      if(d <= tolerance + feather){
+        const x = idx % width, y = (idx / width) | 0;
+        let nearBg = false;
+        if(x > 0 && isBg[idx-1]) nearBg = true;
+        else if(x < width-1 && isBg[idx+1]) nearBg = true;
+        else if(y > 0 && isBg[idx-width]) nearBg = true;
+        else if(y < height-1 && isBg[idx+width]) nearBg = true;
+        if(nearBg){
+          const alpha = Math.max(0, Math.min(255, Math.round(((d - tolerance) / feather) * 255)));
+          data[o+3] = alpha;
+        }
+      }
+    }
+  }
+}
+
 document.getElementById('bg-download').addEventListener('click', ()=>{
-  if(!bgResultUrl) return;
+  if(!window.bgResultUrl) return;
   const link = document.createElement('a');
   link.download = 'background-removed.png';
-  link.href = bgResultUrl;
+  link.href = window.bgResultUrl;
   link.click();
 });
 
 document.getElementById('bg-back-btn').addEventListener('click', ()=>{
   bgFile = null;
-  bgResultUrl = null;
-  document.getElementById('bg-drop-label').classList.remove('hidden');
-  const origImg = document.getElementById('bg-preview-original');
-  origImg.style.display = 'none';
-  origImg.src = '';
-  document.getElementById('bg-result-field').style.display = 'none';
-  document.getElementById('bg-preview-result').src = '';
+  seedColor = null;
+  document.getElementById('bg-drop').classList.remove('hidden');
+  document.getElementById('bg-editor').classList.add('hidden');
   document.getElementById('bg-download').classList.add('hidden');
-  document.getElementById('bg-status').textContent = '';
   document.getElementById('bg-file').value = '';
+  statusEl.textContent = '';
 });
-
-
 </script>
 
 </body>

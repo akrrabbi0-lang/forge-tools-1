@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <style>
   #scan-video{ width:100%; max-width:420px; border-radius:6px; display:none; background:#000; }
   #scan-canvas{ display:none; }
@@ -193,20 +193,35 @@ function decodeImageFile(file){
   const reader = new FileReader();
   reader.onload = e=>{
     img.onload = ()=>{
-      const canvas = document.getElementById('scan-canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
-      if(code){
-        handleDecodedText(code.data);
-      } else {
-        statusEl.textContent = 'No QR code found in that image. Try a clearer photo.';
+      try{
+        if(typeof jsQR !== 'function'){
+          statusEl.textContent = 'The QR scanning library failed to load. Check your internet connection and refresh the page.';
+          return;
+        }
+        const canvas = document.getElementById('scan-canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        if(code){
+          handleDecodedText(code.data);
+        } else {
+          statusEl.textContent = 'No QR code found in that image. Try a clearer photo.';
+        }
+      } catch(err){
+        statusEl.textContent = 'Something went wrong reading that image (' + (err.message || 'unknown error') + ').';
+        console.error(err);
       }
     };
+    img.onerror = ()=>{
+      statusEl.textContent = 'Could not read that file as an image.';
+    };
     img.src = e.target.result;
+  };
+  reader.onerror = ()=>{
+    statusEl.textContent = 'Could not read that file.';
   };
   reader.readAsDataURL(file);
 }
@@ -251,18 +266,30 @@ camStopBtn.addEventListener('click', stopCamera);
 function scanLoop(){
   const canvas = document.getElementById('scan-canvas');
   const ctx = canvas.getContext('2d');
+  if(typeof jsQR !== 'function'){
+    statusEl.textContent = 'The QR scanning library failed to load. Check your internet connection and refresh the page.';
+    stopCamera();
+    return;
+  }
   function tick(){
-    if(video.readyState === video.HAVE_ENOUGH_DATA){
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
-      if(code){
-        handleDecodedText(code.data);
-        stopCamera();
-        return;
+    try{
+      if(video.readyState === video.HAVE_ENOUGH_DATA){
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        if(code){
+          handleDecodedText(code.data);
+          stopCamera();
+          return;
+        }
       }
+    } catch(err){
+      statusEl.textContent = 'Camera scanning hit an error (' + (err.message || 'unknown') + ').';
+      console.error(err);
+      stopCamera();
+      return;
     }
     cameraLoopId = requestAnimationFrame(tick);
   }
