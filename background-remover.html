@@ -28,20 +28,23 @@
 <section class="tool-panel" id="tool-bgremove">
       <h2>Background Remover</h2>
       <p class="desc">Upload an image and get it back with the background stripped out. Runs on an AI model loaded into your browser — nothing is uploaded to a server. Works best on photos with a clear subject (people, products, animals).</p>
-      <div class="drop-zone" id="bg-drop">Click to choose an image, or drag one here</div>
-      <input type="file" id="bg-file" accept="image/*" class="hidden">
-      <div class="row" style="margin-top:8px;">
-        <div class="field">
-          <label>Original</label>
-          <img id="bg-preview-original" style="max-width:100%; border:1px solid var(--line); display:none;">
-        </div>
-        <div class="field">
-          <label>Result</label>
-          <img id="bg-preview-result" style="max-width:100%; border:1px solid var(--line); display:none; background-image:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%); background-size:16px 16px; background-position:0 0,0 8px,8px -8px,-8px 0px;">
-        </div>
+
+      <div class="drop-zone" id="bg-drop">
+        <span id="bg-drop-label">Click to choose an image, or drag one here</span>
+        <img id="bg-preview-original" style="max-width:100%; max-height:320px; display:none; border-radius:4px;">
       </div>
+      <input type="file" id="bg-file" accept="image/*" class="hidden">
+
+      <div class="field" id="bg-result-field" style="margin-top:16px; display:none;">
+        <label>Result</label>
+        <img id="bg-preview-result" style="max-width:100%; max-height:320px; border:1px solid var(--line); border-radius:4px; background-image:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%); background-size:16px 16px; background-position:0 0,0 8px,8px -8px,-8px 0px;">
+      </div>
+
       <p id="bg-status" style="margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate);"></p>
       <button class="action hidden" id="bg-download" style="margin-top:12px;">Download PNG</button>
+      <div style="margin-top:20px;">
+        <button class="action" id="bg-back-btn">← Back</button>
+      </div>
     </section>
 </div>
 
@@ -66,6 +69,8 @@ bgFileInput.addEventListener('change', e=>{
 async function handleBgFile(file){
   bgFile = file;
   const origImg = document.getElementById('bg-preview-original');
+  const dropLabel = document.getElementById('bg-drop-label');
+  const resultField = document.getElementById('bg-result-field');
   const resultImg = document.getElementById('bg-preview-result');
   const statusEl = document.getElementById('bg-status');
   const sizeMB = file.size/1024/1024;
@@ -79,21 +84,26 @@ async function handleBgFile(file){
   }
   const reader = new FileReader();
   reader.onload = async e=>{
+    dropLabel.classList.add('hidden');
     origImg.src = e.target.result;
     origImg.style.display = 'block';
-    resultImg.style.display = 'none';
+    resultField.style.display = 'none';
     document.getElementById('bg-download').classList.add('hidden');
     statusEl.textContent = 'Loading model and removing background (first time can take up to a minute)…';
     try{
-      const mod = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/dist/browser.mjs');
-      const imglyRemoveBackground = mod.default;
-      const blob = await imglyRemoveBackground(file);
+      let mod;
+      try{
+        mod = await import('https://unpkg.com/@imgly/background-removal@1.7.0/dist/index.mjs');
+      } catch(e1){
+        mod = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/dist/index.mjs');
+      }
+      const blob = await mod.removeBackground(file);
       if(!blob || blob.size === 0){
         throw new Error('Empty result');
       }
       bgResultUrl = URL.createObjectURL(blob);
       resultImg.src = bgResultUrl;
-      resultImg.style.display = 'block';
+      resultField.style.display = 'block';
       statusEl.textContent = 'Done.';
       document.getElementById('bg-download').classList.remove('hidden');
     } catch(err){
@@ -109,6 +119,20 @@ document.getElementById('bg-download').addEventListener('click', ()=>{
   link.download = 'background-removed.png';
   link.href = bgResultUrl;
   link.click();
+});
+
+document.getElementById('bg-back-btn').addEventListener('click', ()=>{
+  bgFile = null;
+  bgResultUrl = null;
+  document.getElementById('bg-drop-label').classList.remove('hidden');
+  const origImg = document.getElementById('bg-preview-original');
+  origImg.style.display = 'none';
+  origImg.src = '';
+  document.getElementById('bg-result-field').style.display = 'none';
+  document.getElementById('bg-preview-result').src = '';
+  document.getElementById('bg-download').classList.add('hidden');
+  document.getElementById('bg-status').textContent = '';
+  document.getElementById('bg-file').value = '';
 });
 
 
