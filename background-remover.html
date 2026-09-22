@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-W7D5ZTED2S"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-W7D5ZTED2S');
+</script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="shortcut icon" href="favicon.ico">
@@ -284,51 +291,61 @@ function runRemoval(){
 }
 
 /**
- * Removes background color, flood-filling only from the image border inward
- * (so similarly-colored areas fully inside the subject are left alone),
- * with a soft feathered edge where the cut meets the subject.
+ * Removes background color using region growing: each pixel is compared to the
+ * neighboring pixel it's expanding from (not a single fixed color), so smooth
+ * gradients and shading in real photo backdrops are followed correctly, while
+ * sharp edges (where the subject begins) still stop the fill. Only flood-fills
+ * inward from the image border, so similarly-colored spots fully inside the
+ * subject are left alone.
  */
 function chromaKeyFloodFill(imageData, seed, tolerance, feather){
   const { width, height, data } = imageData;
   const n = width * height;
-  const [r0, g0, b0] = seed;
   const isBg = new Uint8Array(n);
 
-  function dist(idx){
+  function colorAt(idx){
     const o = idx * 4;
-    const dr = data[o] - r0, dg = data[o+1] - g0, db = data[o+2] - b0;
+    return [data[o], data[o+1], data[o+2]];
+  }
+  function dist(c1, c2){
+    const dr = c1[0]-c2[0], dg = c1[1]-c2[1], db = c1[2]-c2[2];
     return Math.sqrt(dr*dr + dg*dg + db*db);
+  }
+  function distToSeed(idx){
+    return dist(colorAt(idx), seed);
   }
 
   const queue = new Int32Array(n);
   let qHead = 0, qTail = 0;
 
-  function trySeed(idx){
-    if(!isBg[idx] && dist(idx) <= tolerance){
+  function trySeed(idx, fromColor){
+    if(!isBg[idx] && dist(colorAt(idx), fromColor) <= tolerance){
       isBg[idx] = 1;
       queue[qTail++] = idx;
     }
   }
 
   for(let x=0; x<width; x++){
-    trySeed(x);                          // top row
-    trySeed((height-1)*width + x);       // bottom row
+    trySeed(x, seed);                          // top row
+    trySeed((height-1)*width + x, seed);        // bottom row
   }
   for(let y=0; y<height; y++){
-    trySeed(y*width);                    // left col
-    trySeed(y*width + (width-1));        // right col
+    trySeed(y*width, seed);                     // left col
+    trySeed(y*width + (width-1), seed);         // right col
   }
 
   while(qHead < qTail){
     const idx = queue[qHead++];
     const x = idx % width, y = (idx / width) | 0;
-    if(x > 0) trySeed(idx - 1);
-    if(x < width - 1) trySeed(idx + 1);
-    if(y > 0) trySeed(idx - width);
-    if(y < height - 1) trySeed(idx + width);
+    const myColor = colorAt(idx);
+    if(x > 0) trySeed(idx - 1, myColor);
+    if(x < width - 1) trySeed(idx + 1, myColor);
+    if(y > 0) trySeed(idx - width, myColor);
+    if(y < height - 1) trySeed(idx + width, myColor);
   }
 
-  // Apply hard mask, then feather the boundary ring
+  // Apply hard mask, then feather the boundary ring (feather still measured against
+  // the original seed color, which is fine since it only affects a thin edge ring)
   for(let idx = 0; idx < n; idx++){
     const o = idx * 4;
     if(isBg[idx]){
@@ -336,7 +353,7 @@ function chromaKeyFloodFill(imageData, seed, tolerance, feather){
       continue;
     }
     if(feather > 0){
-      const d = dist(idx);
+      const d = distToSeed(idx);
       if(d <= tolerance + feather){
         const x = idx % width, y = (idx / width) | 0;
         let nearBg = false;

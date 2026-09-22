@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-W7D5ZTED2S"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-W7D5ZTED2S');
+</script>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="shortcut icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  body.tool-page{ display:flex; align-items:center; justify-content:center; min-height:100vh; }
+  .ad-wrap{ max-width:480px; width:100%; padding:24px; text-align:center; }
+  .ad-box{
+    width:100%;
+    min-height:250px;
+    border:1px dashed var(--line);
+    border-radius:6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--paper-dim);
+    color:var(--slate);
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    margin-bottom:20px;
+    /* AdSense: replace this whole .ad-box div's contents with your <ins class="adsbygoogle">...</ins> unit once approved */
+  }
+  .ad-skip-btn{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    padding:13px 26px;
+    border-radius:2px;
+    cursor:not-allowed;
+    opacity:0.5;
+    transition:opacity .2s ease, background .15s ease;
+  }
+  .ad-skip-btn.ready{
+    cursor:pointer;
+    opacity:1;
+    background:var(--brass);
+    color:var(--ink);
+  }
+  .ad-skip-btn.ready:hover{ background:var(--brass-dim); color:var(--paper); }
+</style>
+</head>
+<body class="tool-page">
+
+<div class="ad-wrap">
+  <div class="ad-box" id="ad-box">Advertisement</div>
+  <button class="ad-skip-btn" id="skip-btn" disabled>Skip in 5s</button>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+let target = params.get('to') || 'index.html';
+// only allow local page navigation, never an external URL
+if(/^https?:\/\//i.test(target) || target.includes('//')){
+  target = 'index.html';
+}
+
+let secondsLeft = 5;
+const skipBtn = document.getElementById('skip-btn');
+
+function tick(){
+  if(secondsLeft <= 0){
+    skipBtn.textContent = 'Skip Ad →';
+    skipBtn.disabled = false;
+    skipBtn.classList.add('ready');
+    return;
+  }
+  skipBtn.textContent = `Skip in ${secondsLeft}s`;
+  secondsLeft -= 1;
+  setTimeout(tick, 1000);
+}
+tick();
+
+skipBtn.addEventListener('click', ()=>{
+  if(!skipBtn.classList.contains('ready')) return;
+  location.href = target;
+});
+</script>
+
+</body>
+</html>

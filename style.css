@@ -18,13 +18,13 @@
     font-family:'Inter', sans-serif;
     line-height:1.5;
     -webkit-font-smoothing:antialiased;
-    overflow:hidden;
+    overflow-y:auto;
   }
   ::selection{ background:var(--brass); color:var(--paper); }
 
   /* ============ HOME VIEW ============ */
   #home-view{
-    height:100vh;
+    min-height:100vh;
     width:100%;
     display:flex;
     flex-direction:column;
@@ -47,7 +47,7 @@
     left:clamp(20px, 4vw, 40px);
     display:flex;
     align-items:center;
-    gap:5px;
+    gap:2px;
     z-index:5;
   }
   .logo-mark-img{
@@ -72,9 +72,8 @@
     align-items:center;
     justify-content:center;
     position:relative;
-    padding:80px 20px 20px;
+    padding:64px 20px 40px;
     min-height:0;
-    transform:translateY(-6vh);
   }
   .home-heading{
     text-align:center;
@@ -338,14 +337,14 @@
   .hidden{ display:none !important; }
 
   @media(max-width:640px){
-    .home-center{ padding-top:96px; }
+    .home-center{ padding-top:76px; }
     .tool-body{ padding:32px 20px 80px; }
 
     /* Force a clean 4-per-row grid on phones, regardless of card count */
     .card-grid{
       display:grid;
-      grid-template-columns:repeat(4, 1fr);
-      gap:10px;
+      grid-template-columns:repeat(5, 1fr);
+      gap:8px;
       max-width:100%;
       width:100%;
       padding:0 4px;
@@ -354,10 +353,10 @@
       width:100%;
       height:auto;
       aspect-ratio:1/1;
-      padding:6px;
+      padding:4px;
     }
-    .tool-card .icon{ width:20px; height:20px; }
-    .tool-card .name{ font-size:9.5px; line-height:1.15; }
+    .tool-card .icon{ width:16px; height:16px; }
+    .tool-card .name{ font-size:8px; line-height:1.1; }
   }
 
 /* Standalone tool page (multi-page site) */
@@ -402,4 +401,52 @@ a.tool-card{ text-decoration:none; }
   border:none;
   cursor:pointer;
   font-family:'Inter', sans-serif;
+}
+
+/* About/How-to-use section on the home page */
+.about-section{
+  background:var(--paper);
+  padding:60px 24px 80px;
+  border-top:1px solid rgba(244,241,232,0.08);
+}
+.about-inner{
+  max-width:900px;
+  margin:0 auto;
+}
+.about-section h2{
+  font-family:'Space Grotesk', sans-serif;
+  font-size:clamp(24px, 3.5vw, 32px);
+  font-weight:600;
+  color:var(--ink);
+  margin-bottom:16px;
+}
+.about-intro{
+  font-size:15px;
+  line-height:1.7;
+  color:var(--slate);
+  max-width:70ch;
+  margin-bottom:40px;
+}
+.about-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+  gap:28px;
+}
+.about-item h3{
+  font-family:'Space Grotesk', sans-serif;
+  font-size:16px;
+  font-weight:600;
+  color:var(--ink);
+  margin-bottom:8px;
+}
+.about-item p{
+  font-size:14px;
+  line-height:1.6;
+  color:var(--slate);
+}
+.about-item strong{ color:var(--ink); }
+
+@media(max-width:640px){
+  .about-section{ padding:44px 20px 60px; }
+  .about-grid{ grid-template-columns:1fr; gap:24px; }
 }
