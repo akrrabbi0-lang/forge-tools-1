@@ -35,9 +35,11 @@
 <section class="tool-panel" id="tool-image">
       <h2>Image Resizer &amp; Compressor</h2>
       <p class="desc">Shrink an image's dimensions or file size. Processed entirely in your browser — the file never uploads anywhere.</p>
-      <div class="drop-zone" id="img-drop">Click to choose an image, or drag one here</div>
+      <div class="drop-zone" id="img-drop">
+        <span id="img-drop-label">Click to choose an image, or drag one here</span>
+        <img id="img-preview" style="max-width:100%; max-height:320px; display:none; border-radius:4px;">
+      </div>
       <input type="file" id="img-file" accept="image/*" class="hidden">
-      <img id="img-preview">
       <div id="img-controls" class="hidden" style="margin-top:24px;">
         <div class="row">
           <div class="field">
@@ -52,6 +54,7 @@
         <button class="action brass" id="img-process">Resize &amp; compress</button>
         <button class="action hidden" id="img-download" style="margin-left:12px;">Download result</button>
         <p id="img-sizeinfo" style="margin-top:14px; font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate);"></p>
+        <button class="action" id="img-back-btn" style="margin-top:16px;">← Back</button>
       </div>
     </section>
 </div>
@@ -61,6 +64,7 @@
 const imgDrop = document.getElementById('img-drop');
 const imgFile = document.getElementById('img-file');
 const imgPreview = document.getElementById('img-preview');
+const imgDropLabel = document.getElementById('img-drop-label');
 const imgControls = document.getElementById('img-controls');
 let currentImg = null;
 let originalSize = 0;
@@ -83,6 +87,7 @@ function handleImageFile(file){
   reader.onload = e=>{
     currentImg = new Image();
     currentImg.onload = ()=>{
+      imgDropLabel.classList.add('hidden');
       imgPreview.src = e.target.result;
       imgPreview.style.display = 'block';
       imgControls.classList.remove('hidden');
@@ -117,6 +122,17 @@ document.getElementById('img-download').addEventListener('click', ()=>{
   link.download = 'resized-image.jpg';
   link.href = processedDataUrl;
   link.click();
+});
+document.getElementById('img-back-btn').addEventListener('click', ()=>{
+  currentImg = null;
+  processedDataUrl = null;
+  imgDropLabel.classList.remove('hidden');
+  imgPreview.style.display = 'none';
+  imgPreview.src = '';
+  imgControls.classList.add('hidden');
+  document.getElementById('img-download').classList.add('hidden');
+  document.getElementById('img-sizeinfo').textContent = '';
+  imgFile.value = '';
 });
 
 </script>

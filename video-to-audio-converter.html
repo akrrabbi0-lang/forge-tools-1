@@ -35,13 +35,17 @@
 <section class="tool-panel" id="tool-audio">
       <h2>Video to Audio Converter</h2>
       <p class="desc">Upload a video file and pull out the audio as a WAV file. Uses your browser's built-in audio engine — no external library to load, and the file never leaves your device.</p>
-      <div class="drop-zone" id="audio-drop">Click to choose a video file, or drag one here</div>
+      <div class="drop-zone" id="audio-drop">
+        <span id="audio-drop-label">Click to choose a video file, or drag one here</span>
+        <video id="audio-video-preview" style="max-width:100%; max-height:280px; display:none; border-radius:4px;" controls muted></video>
+      </div>
       <input type="file" id="audio-file" accept="video/*" class="hidden">
       <p id="audio-filename" style="font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate); margin-bottom:16px;"></p>
       <button class="action brass hidden" id="audio-convert">Extract audio</button>
       <p id="audio-status" style="margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--slate);"></p>
       <audio id="audio-preview" controls class="hidden" style="width:100%; max-width:420px; margin-top:12px; display:block;"></audio>
       <button class="action hidden" id="audio-download" style="margin-top:12px;">Download WAV</button>
+      <button class="action" id="audio-back-btn" style="margin-top:16px;">← Back</button>
     </section>
 </div>
 
@@ -65,6 +69,10 @@ audioFileInput.addEventListener('change', e=>{
 function handleAudioFile(file){
   audioFile = file;
   const sizeMB = file.size/1024/1024;
+  document.getElementById('audio-drop-label').classList.add('hidden');
+  const videoPreview = document.getElementById('audio-video-preview');
+  videoPreview.src = URL.createObjectURL(file);
+  videoPreview.style.display = 'block';
   document.getElementById('audio-filename').textContent = `Selected: ${file.name} (${sizeMB.toFixed(1)} MB)`;
   document.getElementById('audio-convert').classList.remove('hidden');
   document.getElementById('audio-download').classList.add('hidden');
@@ -173,6 +181,21 @@ document.getElementById('audio-download').addEventListener('click', ()=>{
   link.download = 'extracted-audio.wav';
   link.href = audioResultUrl;
   link.click();
+});
+
+document.getElementById('audio-back-btn').addEventListener('click', ()=>{
+  audioFile = null;
+  audioResultUrl = null;
+  document.getElementById('audio-drop-label').classList.remove('hidden');
+  const videoPreview = document.getElementById('audio-video-preview');
+  videoPreview.style.display = 'none';
+  videoPreview.src = '';
+  document.getElementById('audio-filename').textContent = '';
+  document.getElementById('audio-convert').classList.add('hidden');
+  document.getElementById('audio-download').classList.add('hidden');
+  document.getElementById('audio-preview').classList.add('hidden');
+  document.getElementById('audio-status').textContent = '';
+  document.getElementById('audio-file').value = '';
 });
 
 </script>

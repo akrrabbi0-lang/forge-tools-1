@@ -405,7 +405,7 @@ a.tool-card{ text-decoration:none; }
 
 /* About/How-to-use section on the home page */
 .about-section{
-  background:var(--paper);
+  background:var(--ink);
   padding:60px 24px 80px;
   border-top:1px solid rgba(244,241,232,0.08);
 }
@@ -417,13 +417,13 @@ a.tool-card{ text-decoration:none; }
   font-family:'Space Grotesk', sans-serif;
   font-size:clamp(24px, 3.5vw, 32px);
   font-weight:600;
-  color:var(--ink);
+  color:var(--paper);
   margin-bottom:16px;
 }
 .about-intro{
   font-size:15px;
   line-height:1.7;
-  color:var(--slate);
+  color:rgba(244,241,232,0.65);
   max-width:70ch;
   margin-bottom:40px;
 }
@@ -436,15 +436,15 @@ a.tool-card{ text-decoration:none; }
   font-family:'Space Grotesk', sans-serif;
   font-size:16px;
   font-weight:600;
-  color:var(--ink);
+  color:var(--paper);
   margin-bottom:8px;
 }
 .about-item p{
   font-size:14px;
   line-height:1.6;
-  color:var(--slate);
+  color:rgba(244,241,232,0.6);
 }
-.about-item strong{ color:var(--ink); }
+.about-item strong{ color:var(--paper); }
 
 @media(max-width:640px){
   .about-section{ padding:44px 20px 60px; }
