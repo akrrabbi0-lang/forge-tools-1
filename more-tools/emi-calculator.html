@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="লোনের মাসিক কিস্তি (EMI), মোট সুদ আর মোট পরিশোধ বের করার ফ্রি ক্যালকুলেটর।">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ctext x='32' y='45' font-family='monospace' font-weight='700' font-size='34' fill='%23ff5a2f' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E">
+<title>EMI / লোন ক্যালকুলেটর — Forge</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="calculators.html">← ক্যালকুলেটর</a>
+  <div class="mark">FORGE.</div>
+  <h1>EMI / লোন ক্যালকুলেটর</h1>
+  <p class="sub">লোনের পরিমাণ, সুদের হার আর মেয়াদ দিলে মাসিক কিস্তি বের করে দেবে।</p>
+
+  <div class="panel">
+    <label>লোনের পরিমাণ (টাকা)</label>
+    <input type="number" id="emiAmount" placeholder="যেমন: 500000">
+    <div class="row">
+      <div><label>বার্ষিক সুদের হার (%)</label><input type="number" id="emiRate" placeholder="যেমন: 12" step="0.1"></div>
+      <div><label>মেয়াদ (বছর)</label><input type="number" id="emiYears" placeholder="যেমন: 5"></div>
+    </div>
+    <button class="btn" id="emiBtn">EMI বের করো</button>
+    <div class="error-text" id="emiError" style="display:none"></div>
+    <div class="result" id="emiResult" style="display:none"></div>
+  </div>
+
+  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
+</div>
+
+<script src="common.js"></script>
+<script>
+const emiBtn = document.getElementById('emiBtn');
+const emiError = document.getElementById('emiError');
+const emiResult = document.getElementById('emiResult');
+const emiInputs = [document.getElementById('emiAmount'), document.getElementById('emiRate'), document.getElementById('emiYears')];
+
+emiBtn.onclick = ()=>{
+  const P = parseFloat(document.getElementById('emiAmount').value);
+  const annualRate = parseFloat(document.getElementById('emiRate').value);
+  const years = parseFloat(document.getElementById('emiYears').value);
+  if(!P || !annualRate || !years){ showError(emiError, 'সব ফিল্ড পূরণ করো'); emiResult.style.display='none'; return; }
+  clearMsg(emiError);
+
+  const n = years * 12;
+  const r = annualRate / 12 / 100;
+  const emi = r === 0 ? P/n : P * r * Math.pow(1+r, n) / (Math.pow(1+r, n) - 1);
+  const totalPay = emi * n;
+  const totalInterest = totalPay - P;
+
+  emiResult.style.display='none'; void emiResult.offsetWidth; emiResult.style.display='block';
+  emiResult.innerHTML = `
+    <div class="stat-row"><span class="k">মাসিক কিস্তি (EMI)</span><span class="v">৳${emi.toFixed(2)}</span></div>
+    <div class="stat-row"><span class="k">মোট পরিশোধ</span><span class="v">৳${totalPay.toFixed(2)}</span></div>
+    <div class="stat-row"><span class="k">মোট সুদ</span><span class="v">৳${totalInterest.toFixed(2)}</span></div>
+  `;
+};
+onEnter(emiInputs, emiBtn);
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ওয়াইফাই নেটওয়ার্কের জন্য স্ক্যান করার মতো QR কোড বানাও, সরাসরি ব্রাউজারে, ডাউনলোড করা যায়।">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ctext x='32' y='45' font-family='monospace' font-weight='700' font-size='34' fill='%23ff5a2f' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E">
+<title>ওয়াইফাই QR জেনারেটর — Forge</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← সব টুল</a>
+  <div class="mark">FORGE.</div>
+  <h1>ওয়াইফাই QR জেনারেটর</h1>
+  <p class="sub">QR স্ক্যান করলেই মোবাইল সরাসরি ওয়াইফাই-তে কানেক্ট হয়ে যাবে।</p>
+
+  <div class="panel">
+    <label>নেটওয়ার্কের নাম (SSID)</label>
+    <input type="text" id="wifiSsid" placeholder="যেমন: Home_WiFi">
+    <label>পাসওয়ার্ড</label>
+    <input type="text" id="wifiPass" placeholder="পাসওয়ার্ড">
+    <label>এনক্রিপশন</label>
+    <select id="wifiEnc">
+      <option value="WPA">WPA/WPA2</option>
+      <option value="WEP">WEP</option>
+      <option value="nopass">নেই (Open)</option>
+    </select>
+    <button class="btn" id="wifiGenBtn">QR বানাও</button>
+    <div class="error-text" id="wifiError" style="display:none"></div>
+    <div class="qr-wrap" id="wifiResult" style="display:none">
+      <canvas id="wifiCanvas" width="220" height="220"></canvas>
+      <button class="btn ghost" id="wifiDownload">ডাউনলোড PNG</button>
+    </div>
+  </div>
+
+  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
+</div>
+
+<script src="common.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.0.3/qrcode.min.js"></script>
+<script>
+function escapeWifi(s){ return s.replace(/([\\;,:"])/g,'\\$1'); }
+
+function drawQR(canvasId, text){
+  const qr = qrcode(0, 'M');
+  qr.addData(text);
+  qr.make();
+  const count = qr.getModuleCount();
+  const quiet = 2;
+  const canvas = document.getElementById(canvasId);
+  const scale = Math.max(1, Math.floor(canvas.width / (count + quiet*2)));
+  const size = (count + quiet*2) * scale;
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#f8f6f0'; ctx.fillRect(0,0,size,size);
+  ctx.fillStyle = '#111';
+  for(let row=0; row<count; row++){
+    for(let col=0; col<count; col++){
+      if(qr.isDark(row,col)) ctx.fillRect((col+quiet)*scale, (row+quiet)*scale, scale, scale);
+    }
+  }
+}
+
+const wifiGenBtn = document.getElementById('wifiGenBtn');
+const wifiError = document.getElementById('wifiError');
+wifiGenBtn.onclick = ()=>{
+  const ssid = document.getElementById('wifiSsid').value.trim();
+  const pass = document.getElementById('wifiPass').value;
+  const enc = document.getElementById('wifiEnc').value;
+  if(!ssid){ showError(wifiError, 'নেটওয়ার্কের নাম দাও'); document.getElementById('wifiResult').style.display='none'; return; }
+  clearMsg(wifiError);
+  const payload = `WIFI:T:${enc};S:${escapeWifi(ssid)};P:${enc==='nopass'?'':escapeWifi(pass)};;`;
+  drawQR('wifiCanvas', payload);
+  document.getElementById('wifiResult').style.display='flex';
+};
+document.getElementById('wifiDownload').onclick = ()=> downloadCanvas('wifiCanvas','wifi-qr.png');
+onEnter([document.getElementById('wifiSsid'), document.getElementById('wifiPass')], wifiGenBtn);
+</script>
+</body>
+</html>

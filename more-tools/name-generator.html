@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="বাংলা ছেলে বা মেয়ের নাম, অথবা বিজনেসের নাম আইডিয়া বের করার ফ্রি জেনারেটর।">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ctext x='32' y='45' font-family='monospace' font-weight='700' font-size='34' fill='%23ff5a2f' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E">
+<title>নাম জেনারেটর — Forge</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← সব টুল</a>
+  <div class="mark">FORGE.</div>
+  <h1>নাম জেনারেটর</h1>
+  <p class="sub">বাংলা নাম বা বিজনেসের নাম আইডিয়া বের করো।</p>
+
+  <div class="panel">
+    <div class="chip-row" id="nameChips">
+      <div class="chip on" data-v="boy" tabindex="0" role="button">ছেলে</div>
+      <div class="chip" data-v="girl" tabindex="0" role="button">মেয়ে</div>
+      <div class="chip" data-v="biz" tabindex="0" role="button">বিজনেস</div>
+    </div>
+    <button class="btn" id="nameGenBtn">নাম দাও</button>
+    <div class="result" id="nameResult" style="display:none"></div>
+  </div>
+
+  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
+</div>
+
+<script src="common.js"></script>
+<script>
+const BN_BOY = ["আয়ান","নাফিস","রাফসান","আরহাম","জাওয়াদ","ইয়াসির","সাদমান","রিয়াদ","তানভীর","আবির","ফাহিম","ইমতিয়াজ"];
+const BN_GIRL = ["আয়েশা","মাইশা","রাইসা","নাফিসা","জান্নাত","সাবিহা","তাসনিম","আফসানা","রোজা","ইলমা","ফাবিহা","সাইমা"];
+const BIZ_PREFIX = ["Metro","Prime","Nova","Urban","Delta","Bright","Royal","Swift","Golden","Trend","Pure","Vivid"];
+const BIZ_SUFFIX = ["Mart","Hub","Bazaar","Corner","House","Traders","Point","Studio","Collection","Express"];
+
+const boyBag = makeBag(BN_BOY);
+const girlBag = makeBag(BN_GIRL);
+const prefixBag = makeBag(BIZ_PREFIX);
+const suffixBag = makeBag(BIZ_SUFFIX);
+
+let mode = 'boy';
+document.querySelectorAll('#nameChips .chip').forEach(c=>{
+  const select = ()=>{ document.querySelectorAll('#nameChips .chip').forEach(x=>x.classList.remove('on')); c.classList.add('on'); mode=c.dataset.v; };
+  c.onclick = select;
+  c.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); select(); } });
+});
+const nameGenBtn = document.getElementById('nameGenBtn');
+nameGenBtn.onclick = ()=>{
+  const res = document.getElementById('nameResult');
+  res.style.display='none'; void res.offsetWidth; res.style.display='block';
+  let list;
+  if(mode==='boy') list = boyBag.draw(5);
+  else if(mode==='girl') list = girlBag.draw(5);
+  else {
+    const prefixes = prefixBag.draw(5);
+    const suffixes = suffixBag.draw(5);
+    list = prefixes.map((p,i)=> p+' '+suffixes[i]);
+  }
+  res.innerHTML = list.map(n=>`<div class="name-item">${n}</div>`).join('');
+};
+</script>
+</body>
+</html>

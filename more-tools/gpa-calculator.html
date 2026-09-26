@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="কোর্স ক্রেডিট আর গ্রেড দিয়ে GPA বা CGPA বের করার ক্যালকুলেটর।">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ctext x='32' y='45' font-family='monospace' font-weight='700' font-size='34' fill='%23ff5a2f' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E">
+<title>GPA / CGPA ক্যালকুলেটর — Forge</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="calculators.html">← ক্যালকুলেটর</a>
+  <div class="mark">FORGE.</div>
+  <h1>GPA / CGPA ক্যালকুলেটর</h1>
+  <p class="sub">প্রতিটা কোর্সের ক্রেডিট আর গ্রেড দাও, ওয়েটেড GPA বের করে দেবে (৪.০০ স্কেল)।</p>
+
+  <div class="panel">
+    <div class="receipt-lines" id="gLines"></div>
+    <button class="btn ghost" id="gAddLine" type="button">+ কোর্স যোগ করো</button>
+    <button class="btn" id="gCalcBtn">GPA বের করো</button>
+    <div class="result" id="gResult" style="display:none"></div>
+  </div>
+
+  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
+</div>
+
+<script src="common.js"></script>
+<script>
+const GRADE_POINTS = {'A+':4.00,'A':3.75,'A-':3.50,'B+':3.25,'B':3.00,'B-':2.75,'C+':2.50,'C':2.25,'D':2.00,'F':0.00};
+const linesWrap = document.getElementById('gLines');
+const gCalcBtn = document.getElementById('gCalcBtn');
+
+function addLine(){
+  const row = document.createElement('div');
+  row.className='receipt-line';
+  const opts = Object.keys(GRADE_POINTS).map(g=>`<option value="${g}">${g}</option>`).join('');
+  row.innerHTML = `<input type="text" placeholder="কোর্সের নাম (ঐচ্ছিক)" class="cname">
+    <input type="number" placeholder="ক্রেডিট" class="credit amt" step="0.5">
+    <select class="grade">${opts}</select>
+    <button type="button" class="remove-row-btn" title="বাদ দাও">✕</button>`;
+  row.querySelector('.remove-row-btn').onclick = ()=>{
+    if(linesWrap.children.length > 1) row.remove();
+  };
+  onEnter([row.querySelector('.cname'), row.querySelector('.credit')], gCalcBtn);
+  linesWrap.appendChild(row);
+}
+addLine(); addLine(); addLine();
+document.getElementById('gAddLine').onclick = addLine;
+
+gCalcBtn.onclick = ()=>{
+  const rows = Array.from(linesWrap.querySelectorAll('.receipt-line'));
+  let totalCredit = 0, totalPoints = 0;
+  rows.forEach(r=>{
+    const credit = parseFloat(r.querySelector('.credit').value) || 0;
+    const grade = r.querySelector('.grade').value;
+    if(credit > 0){
+      totalCredit += credit;
+      totalPoints += credit * GRADE_POINTS[grade];
+    }
+  });
+  const res = document.getElementById('gResult');
+  res.style.display='none'; void res.offsetWidth; res.style.display='block';
+  if(totalCredit === 0){
+    res.className = 'error-text';
+    res.innerHTML = `অন্তত একটা কোর্সের ক্রেডিট দাও`;
+    return;
+  }
+  res.className = 'result';
+  const gpa = totalPoints / totalCredit;
+  res.innerHTML = `
+    <div class="stat-row"><span class="k">মোট ক্রেডিট</span><span class="v">${totalCredit}</span></div>
+    <div class="stat-row"><span class="k">GPA / CGPA</span><span class="v">${gpa.toFixed(2)}</span></div>
+  `;
+};
+</script>
+</body>
+</html>

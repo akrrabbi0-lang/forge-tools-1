@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="টেক্সট লিখে ব্রাউজারের নিজস্ব ভয়েসে শুনে নেওয়ার ফ্রি টুল।">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ctext x='32' y='45' font-family='monospace' font-weight='700' font-size='34' fill='%23ff5a2f' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E">
+<title>টেক্সট টু স্পিচ — Forge</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← সব টুল</a>
+  <div class="mark">FORGE.</div>
+  <h1>টেক্সট টু স্পিচ</h1>
+  <p class="sub">টেক্সট লিখে শুনে নাও — ব্রাউজারের নিজস্ব ভয়েস ব্যবহার করে, কোনো কিছু আপলোড হয় না।</p>
+
+  <div class="panel">
+    <label>টেক্সট</label>
+    <textarea id="ttsText" placeholder="যা পড়াতে চাও এখানে লেখো..." rows="5"></textarea>
+    <label>ভয়েস</label>
+    <select id="ttsVoice"></select>
+    <div class="row">
+      <div><label>স্পিড</label><input type="range" id="ttsRate" min="0.5" max="2" step="0.1" value="1"></div>
+      <div><label>পিচ</label><input type="range" id="ttsPitch" min="0" max="2" step="0.1" value="1"></div>
+    </div>
+    <div class="voice-row">
+      <button class="btn" id="playBtn">▶ শোনাও</button>
+      <button class="btn ghost" id="stopBtn" type="button">■ থামাও</button>
+    </div>
+    <div class="error-text" id="ttsError" style="display:none"></div>
+    <p class="muted-note" id="ttsNote"></p>
+  </div>
+
+  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
+</div>
+
+<script src="common.js"></script>
+<script>
+const synth = window.speechSynthesis;
+const voiceSelect = document.getElementById('ttsVoice');
+const note = document.getElementById('ttsNote');
+const ttsError = document.getElementById('ttsError');
+const ttsTextEl = document.getElementById('ttsText');
+
+if(!synth){
+  note.textContent = 'দুঃখিত, তোমার ব্রাউজার টেক্সট-টু-স্পিচ সাপোর্ট করে না।';
+  document.getElementById('playBtn').disabled = true;
+} else {
+  function loadVoices(){
+    const voices = synth.getVoices();
+    voiceSelect.innerHTML = voices.map((v,i)=>`<option value="${i}">${v.name} (${v.lang})</option>`).join('');
+    if(voices.length===0){
+      note.textContent = 'ভয়েস লোড হচ্ছে... একটু অপেক্ষা করো।';
+    } else {
+      note.textContent = `${voices.length}টা ভয়েস পাওয়া গেছে। বাংলা ভয়েস না থাকলে ডিভাইস/ব্রাউজার ভেদে আলাদা হতে পারে।`;
+    }
+  }
+  loadVoices();
+  if(synth.onvoiceschanged !== undefined){ synth.onvoiceschanged = loadVoices; }
+
+  document.getElementById('playBtn').onclick = ()=>{
+    const text = ttsTextEl.value.trim();
+    if(!text){ showError(ttsError, 'কিছু টেক্সট লেখো'); return; }
+    clearMsg(ttsError);
+    synth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    const voices = synth.getVoices();
+    const idx = parseInt(voiceSelect.value);
+    if(voices[idx]) utter.voice = voices[idx];
+    utter.rate = parseFloat(document.getElementById('ttsRate').value);
+    utter.pitch = parseFloat(document.getElementById('ttsPitch').value);
+    synth.speak(utter);
+  };
+  document.getElementById('stopBtn').onclick = ()=> synth.cancel();
+  ttsTextEl.addEventListener('keydown', e=>{
+    if(e.key==='Enter' && (e.ctrlKey || e.metaKey)){ e.preventDefault(); document.getElementById('playBtn').click(); }
+  });
+}
+</script>
+</body>
+</html>

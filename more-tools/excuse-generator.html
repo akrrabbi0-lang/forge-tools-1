@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="অফিস বা স্কুলে দেরি হলে মজার বাহানা বের করার জেনারেটর।">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ctext x='32' y='45' font-family='monospace' font-weight='700' font-size='34' fill='%23ff5a2f' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E">
+<title>এক্সকিউজ জেনারেটর — Forge</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← সব টুল</a>
+  <div class="mark">FORGE.</div>
+  <h1>এক্সকিউজ জেনারেটর</h1>
+  <p class="sub">শুধু মজার জন্য — অফিস বা স্কুলে দেরি হলে একটা বাহানা!</p>
+
+  <div class="panel">
+    <div class="chip-row" id="excChips">
+      <div class="chip on" data-v="office" tabindex="0" role="button">অফিস</div>
+      <div class="chip" data-v="school" tabindex="0" role="button">স্কুল/কলেজ</div>
+    </div>
+    <button class="btn" id="excGenBtn">বাহানা দাও</button>
+    <div class="result" id="excResult" style="display:none"></div>
+  </div>
+
+  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
+</div>
+
+<script src="common.js"></script>
+<script>
+const EXCUSES = {
+  office: ["রাস্তায় প্রচণ্ড জ্যাম ছিল, তাই দেরি হয়ে গেল।","হঠাৎ পেটে ব্যথা শুরু হয়েছিল, ডাক্তার দেখাতে হলো।","ইন্টারনেট প্রবলেমের জন্য মেইল পাঠাতে পারিনি।","বাসায় হঠাৎ পানির লাইন লিক করেছিল, ঠিক করাতে হলো।","গাড়ি স্টার্ট নিচ্ছিল না, মেকানিক ডাকতে হয়েছে।"],
+  school: ["রাতে পড়তে পড়তে ঘুমিয়ে পড়েছিলাম, খাতা আনতে ভুলে গেছি।","বাসায় হঠাৎ মেহমান এসেছিল, পড়ার সময় পাইনি।","প্রিন্টার নষ্ট হয়ে গিয়েছিল অ্যাসাইনমেন্ট প্রিন্ট করার সময়।","ছোট ভাই/বোন অসুস্থ, তাকে দেখতে হয়েছে।","কম্পিউটার হঠাৎ রিস্টার্ট হয়ে ফাইল সেভ হয়নি।"]
+};
+const excuseBags = { office: makeBag(EXCUSES.office), school: makeBag(EXCUSES.school) };
+
+let mode='office';
+document.querySelectorAll('#excChips .chip').forEach(c=>{
+  const select = ()=>{ document.querySelectorAll('#excChips .chip').forEach(x=>x.classList.remove('on')); c.classList.add('on'); mode=c.dataset.v; };
+  c.onclick = select;
+  c.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); select(); } });
+});
+document.getElementById('excGenBtn').onclick = ()=>{
+  const res = document.getElementById('excResult');
+  res.style.display='none'; void res.offsetWidth; res.style.display='block';
+  res.innerHTML = `<div class="name-item">${excuseBags[mode].draw()}</div>`;
+};
+</script>
+</body>
+</html>

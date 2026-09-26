@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="নামের লিস্ট বা নাম্বার রেঞ্জ থেকে র‍্যান্ডম বিজয়ী বেছে নেওয়ার লটারি বা ড্র টুল।">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ctext x='32' y='45' font-family='monospace' font-weight='700' font-size='34' fill='%23ff5a2f' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E">
+<title>লটারি / র‍্যাফেল ড্র — Forge</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← সব টুল</a>
+  <div class="mark">FORGE.</div>
+  <h1>লটারি / র‍্যাফেল ড্র</h1>
+  <p class="sub">নামের লিস্ট বা নাম্বার রেঞ্জ দিয়ে র‍্যান্ডম বিজয়ী বেছে নাও।</p>
+
+  <div class="panel">
+    <label>নামের লিস্ট (কমা দিয়ে আলাদা করো), অথবা খালি রেখে নিচে রেঞ্জ ব্যবহার করো</label>
+    <textarea id="drawNames" placeholder="রহিম, করিম, সাকিব, নাদিয়া"></textarea>
+    <div class="row">
+      <div><label>নাম্বার রেঞ্জ শুরু</label><input type="number" id="drawMin" placeholder="1"></div>
+      <div><label>নাম্বার রেঞ্জ শেষ</label><input type="number" id="drawMax" placeholder="100"></div>
+    </div>
+    <button class="btn" id="drawBtn">ড্র করো</button>
+    <div class="result" id="drawResult" style="display:none"></div>
+  </div>
+
+  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
+</div>
+
+<script src="common.js"></script>
+<script>
+let lastNameWinner = null;
+let lastNumberWinner = null;
+
+document.getElementById('drawBtn').onclick = ()=>{
+  const namesRaw = document.getElementById('drawNames').value.trim();
+  const res = document.getElementById('drawResult');
+  res.style.display='none'; void res.offsetWidth; res.style.display='block';
+  res.className = 'result';
+  if(namesRaw){
+    const names = namesRaw.split(',').map(s=>s.trim()).filter(Boolean);
+    if(names.length===0){ res.className='error-text'; res.innerHTML = 'একটা নাম দাও'; return; }
+    let winner = names[rand(names.length)];
+    if(names.length>1){
+      let tries=0;
+      while(winner===lastNameWinner && tries<20){ winner = names[rand(names.length)]; tries++; }
+    }
+    lastNameWinner = winner;
+    res.innerHTML = `<div class="name-item">বিজয়ী: <strong>${winner}</strong></div>`;
+  } else {
+    const min = parseInt(document.getElementById('drawMin').value)||1;
+    const max = parseInt(document.getElementById('drawMax').value)||100;
+    let winner = min + rand(max-min+1);
+    if(max>min){
+      let tries=0;
+      while(winner===lastNumberWinner && tries<20){ winner = min + rand(max-min+1); tries++; }
+    }
+    lastNumberWinner = winner;
+    res.innerHTML = `<div class="name-item">বিজয়ী নাম্বার: <strong>${winner}</strong></div>`;
+  }
+};
+onEnter([document.getElementById('drawMin'), document.getElementById('drawMax')], document.getElementById('drawBtn'));
+</script>
+</body>
+</html>

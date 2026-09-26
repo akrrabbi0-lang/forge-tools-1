@@ -128,7 +128,7 @@ bgFileInput.addEventListener('change', e=>{
 
 function handleBgFile(file){
   const sizeMB = file.size/1024/1024;
-  if(sizeMB > 25){
+  if(sizeMB > 20){
     statusEl.textContent = 'This image is quite large — try one under 20MB.';
     return;
   }
@@ -364,6 +364,14 @@ function chromaKeyFloodFill(imageData, seed, tolerance, feather){
         if(nearBg){
           const alpha = Math.max(0, Math.min(255, Math.round(((d - tolerance) / feather) * 255)));
           data[o+3] = alpha;
+          // Un-mix the background color out of this translucent edge pixel so a
+          // fringe/halo of the old background doesn't show once placed on a new one.
+          if(alpha > 0 && alpha < 255){
+            const a = alpha / 255;
+            data[o]   = Math.max(0, Math.min(255, Math.round((data[o]   - seed[0]*(1-a)) / a)));
+            data[o+1] = Math.max(0, Math.min(255, Math.round((data[o+1] - seed[1]*(1-a)) / a)));
+            data[o+2] = Math.max(0, Math.min(255, Math.round((data[o+2] - seed[2]*(1-a)) / a)));
+          }
         }
       }
     }

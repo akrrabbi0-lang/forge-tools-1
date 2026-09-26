@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="মজার বাংলা মিম ক্যাপশন জেনারেটর, বন্ধুদের নাম দিয়ে কাস্টমাইজ করা যায়।">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ctext x='32' y='45' font-family='monospace' font-weight='700' font-size='34' fill='%23ff5a2f' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E">
+<title>মিম ক্যাপশন জেনারেটর — Forge</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← সব টুল</a>
+  <div class="mark">FORGE.</div>
+  <h1>মিম ক্যাপশন জেনারেটর</h1>
+  <p class="sub">একটা নাম দাও, মজার ক্যাপশন বানিয়ে দিচ্ছি।</p>
+
+  <div class="panel">
+    <label>নাম (ঐচ্ছিক)</label>
+    <input type="text" id="memeName" placeholder="যেমন: রাফি">
+    <button class="btn" id="memeBtn">ক্যাপশন দাও</button>
+    <div class="result" id="memeResult" style="display:none"></div>
+  </div>
+
+  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
+</div>
+
+<script src="common.js"></script>
+<script>
+const MEME_TEMPLATES = [
+  n => `যখন ${n} বলে "আসছি ৫ মিনিটে" আর আসে ২ ঘণ্টা পর`,
+  n => `${n}: আমি ডায়েটে আছি\nএকই ${n}: বিরিয়ানি খেতে খেতে`,
+  n => `মায়ের ডাক শুনলে ${n} এর মনে হয় সব কাজ শেষ`,
+  n => `${n} যখন মাসের শেষে ব্যালেন্স চেক করে`,
+  n => `সবাই: ঘুমাও\n${n}: আরেকটা এপিসোড দেখেই ঘুমাচ্ছি`,
+  n => `${n} এর ফোনে চার্জ ১%, তাও রিল দেখা বন্ধ নাই`
+];
+const memeBag = makeBag(MEME_TEMPLATES);
+document.getElementById('memeBtn').onclick = ()=>{
+  const name = document.getElementById('memeName').value.trim() || 'আমি';
+  const res = document.getElementById('memeResult');
+  res.style.display='none'; void res.offsetWidth; res.style.display='block';
+  res.innerHTML = `<div class="name-item" style="white-space:pre-line">${memeBag.draw()(name)}</div>`;
+};
+onEnter(document.getElementById('memeName'), document.getElementById('memeBtn'));
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="দোকান বা ছোট লেনদেনের জন্য প্রিন্ট করার মতো রিসিট বা ভাউচার বানানোর ফ্রি টুল।">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ctext x='32' y='45' font-family='monospace' font-weight='700' font-size='34' fill='%23ff5a2f' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E">
+<title>রিসিট / ভাউচার জেনারেটর — Forge</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  @media print{
+    body *{visibility:hidden;}
+    #rPreview, #rPreview *{visibility:visible;}
+    #rPreview{position:absolute;top:0;left:0;width:100%;margin:0;border:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← সব টুল</a>
+  <div class="mark">FORGE.</div>
+  <h1>রিসিট / ভাউচার জেনারেটর</h1>
+  <p class="sub">দোকান বা ছোট লেনদেনের জন্য প্রিন্ট করার মতো একটা রিসিট বানাও।</p>
+
+  <div class="panel">
+    <label>দোকান / ব্যবসার নাম</label>
+    <input type="text" id="rShop" placeholder="যেমন: রহমান স্টোর">
+    <label>কাস্টমারের নাম (ঐচ্ছিক)</label>
+    <input type="text" id="rCust" placeholder="">
+    <label>আইটেম লিস্ট</label>
+    <div class="receipt-lines" id="rLines"></div>
+    <button class="btn ghost" id="rAddLine" type="button">+ আইটেম যোগ করো</button>
+    <button class="btn" id="rGenBtn">রিসিট বানাও</button>
+    <div class="receipt-preview" id="rPreview" style="display:none"></div>
+    <button class="btn ghost" id="rPrintBtn" type="button" style="display:none">🖨 প্রিন্ট করো</button>
+  </div>
+
+  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
+</div>
+
+<script src="common.js"></script>
+<script>
+const linesWrap = document.getElementById('rLines');
+function addLine(){
+  const row = document.createElement('div');
+  row.className='receipt-line';
+  row.innerHTML = `<input type="text" placeholder="আইটেমের নাম" class="itm"><input type="number" placeholder="দাম" class="amt"><button type="button" class="remove-row-btn" title="বাদ দাও">✕</button>`;
+  row.querySelector('.remove-row-btn').onclick = ()=>{
+    if(linesWrap.children.length > 1) row.remove();
+  };
+  linesWrap.appendChild(row);
+}
+addLine(); addLine(); addLine();
+document.getElementById('rAddLine').onclick = addLine;
+
+const rGenBtn = document.getElementById('rGenBtn');
+rGenBtn.onclick = ()=>{
+  const shop = document.getElementById('rShop').value.trim() || 'দোকানের নাম';
+  const cust = document.getElementById('rCust').value.trim();
+  const items = Array.from(linesWrap.querySelectorAll('.receipt-line')).map(r=>{
+    const name = r.querySelector('.itm').value.trim();
+    const amt = parseFloat(r.querySelector('.amt').value) || 0;
+    return {name, amt};
+  }).filter(i=>i.name);
+  const total = items.reduce((s,i)=>s+i.amt,0);
+  const date = new Date().toLocaleDateString('en-GB');
+  let out = `${shop}\n${'-'.repeat(28)}\n`;
+  if(cust) out += `Customer: ${cust}\n`;
+  out += `Date: ${date}\n${'-'.repeat(28)}\n`;
+  items.forEach(i=> out += `${i.name.padEnd(18)} ${('৳'+i.amt.toFixed(2)).padStart(9)}\n`);
+  out += `${'-'.repeat(28)}\nTotal: ৳${total.toFixed(2)}\n${'-'.repeat(28)}\nধন্যবাদ!`;
+  const prev = document.getElementById('rPreview');
+  prev.style.display='none'; void prev.offsetWidth; prev.style.display='block';
+  prev.textContent = out;
+  document.getElementById('rPrintBtn').style.display = items.length ? 'inline-flex' : 'none';
+};
+document.getElementById('rPrintBtn').onclick = ()=> window.print();
+onEnter([document.getElementById('rShop'), document.getElementById('rCust')], rGenBtn);
+</script>
+</body>
+</html>
