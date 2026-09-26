@@ -94,17 +94,16 @@
   }
 
   .card-grid{
-    display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:clamp(14px, 2vw, 26px);
-    max-width:520px;
-    width:100%;
-    margin:0 auto;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:clamp(12px, 2vw, 26px);
+    max-width:880px;
   }
   .tool-card{
-    width:100%;
-    aspect-ratio:1/1;
-    border-radius:20px;
+    width:clamp(72px, 9.5vw, 116px);
+    height:clamp(72px, 9.5vw, 116px);
+    border-radius:50%;
     display:flex;
     flex-direction:column;
     align-items:center;

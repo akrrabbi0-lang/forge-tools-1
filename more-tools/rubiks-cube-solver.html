@@ -4,14 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="তোমার রুবিক্স কিউবের রং বসাও, সলভ করার ধাপে ধাপে মুভ পেয়ে যাও।">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ctext x='32' y='45' font-family='monospace' font-weight='700' font-size='34' fill='%23ff5a2f' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="shortcut icon" href="../favicon.ico">
+<link rel="icon" type="image/png" href="../favicon.png">
 <title>Rubik's Cube সলভার — Forge</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrap">
   <a class="back" href="index.html">← সব টুল</a>
-  <div class="mark">FORGE.</div>
+  <div class="mark"><img src="../favicon.svg" alt="Forge" class="mark-icon">FORGE.</div>
   <h1>Rubik's Cube সলভার</h1>
   <p class="sub">কিউবটা এভাবে ধরো: <strong>সাদা উপরে, সবুজ তোমার দিকে (সামনে)</strong>। এই অবস্থান ঠিক রেখে প্রতিটা ফেস ঘুরিয়ে ঘুরিয়ে নিচের নেট-এ রং বসাও। মাঝের ঘর (সেন্টার) ফিক্সড, ওটা বদলাবে না।</p>
 
@@ -26,6 +28,7 @@
     </div>
 
     <div class="cube-net" id="cubeNet"></div>
+    <p class="muted-note" style="margin-top:-8px;">প্রতিটা ছোট বর্গ = কিউবের একটা স্টিকার। মাঝের বর্গ (যেখানে হাল্কা করে ফেসের নাম লেখা) ফিক্সড — ওখানে ক্লিক করা লাগবে না। বাকি ৮টা ঘরে (কোণা আর পাশের ঘর) ক্লিক করে আসল কিউব দেখে দেখে রং বসাও।</p>
 
     <div class="row" style="margin-top:16px">
       <button class="btn" id="solveBtn">সলভ করো</button>
@@ -2099,6 +2102,10 @@ FACE_ORDER.forEach(face=>{
     if(i===4){
       s.classList.add('locked');
       s.dataset.fixed = face;
+      const label = document.createElement('span');
+      label.className = 'face-label';
+      label.textContent = face;
+      s.appendChild(label);
     } else {
       s.dataset.fixed = face; // default: matches face (solved state)
       s.tabIndex = 0;

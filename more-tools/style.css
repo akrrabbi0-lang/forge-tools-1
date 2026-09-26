@@ -29,22 +29,61 @@ input:hover, select:hover, textarea:hover{border-color:#3a3a3c;}
   font-family:var(--mono);font-size:12px;margin-bottom:18px;transition:color .15s ease, gap .15s ease;
 }
 .back:hover{color:var(--text);gap:9px;}
-.mark{font-family:var(--mono);font-weight:700;letter-spacing:0.08em;color:var(--accent);font-size:14px;}
+.mark{font-family:var(--mono);font-weight:700;letter-spacing:0.08em;color:var(--accent);font-size:14px;display:inline-flex;align-items:center;gap:7px;}
+.mark-icon{width:18px;height:18px;border-radius:5px;flex-shrink:0;display:block;}
+header{display:flex;flex-direction:column;align-items:flex-start;gap:2px;}
 h1{font-family:var(--mono);font-size:clamp(20px,4vw,26px);font-weight:700;margin:6px 0 4px;line-height:1.25;}
 .sub{color:var(--muted);font-size:14px;max-width:52ch;line-height:1.5;margin:0 0 22px;}
 
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:22px 0 20px;}
-@media (min-width:640px){ .grid{grid-template-columns:repeat(4,1fr);} .wrap{max-width:920px;} }
-.tool-btn{
-  background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 12px;
-  display:flex;flex-direction:column;align-items:flex-start;gap:10px;cursor:pointer;color:var(--text);
-  text-align:left;text-decoration:none;transition:border-color .15s ease, background .15s ease, transform .15s ease;
-  font-family:var(--sans);min-height:92px;
+.grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:22px 0 20px;
+  justify-items:center;
 }
-.tool-btn:hover{border-color:#3a3a3c;transform:translateY(-1px);}
-.tool-btn:active{transform:translateY(0);}
-.tool-btn svg{width:20px;height:20px;stroke:var(--text);transition:stroke .15s ease;}
-.tool-btn .lbl{font-size:13px;font-weight:600;line-height:1.3;}
+@media (min-width:640px){
+  .grid{
+    display:flex;flex-wrap:wrap;justify-content:center;
+    gap:clamp(12px, 2vw, 26px);max-width:880px;margin:22px auto 20px;
+  }
+  .wrap{max-width:920px;}
+}
+.tool-btn{
+  width:100%;aspect-ratio:1/1;border-radius:16px;padding:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  cursor:pointer;border:none;text-align:center;text-decoration:none;color:#FBF8F2;
+  transition:transform .18s ease, box-shadow .18s ease;
+  font-family:var(--sans);
+  box-shadow:0 10px 24px -10px rgba(0,0,0,0.35);
+}
+@media (min-width:640px){
+  .tool-btn{
+    width:clamp(72px, 9.5vw, 116px);height:clamp(72px, 9.5vw, 116px);
+    aspect-ratio:auto;border-radius:50%;
+  }
+}
+.tool-btn:hover{transform:translateY(-6px) scale(1.03);}
+.tool-btn:active{transform:translateY(-2px) scale(1.01);}
+.tool-btn svg{width:24px;height:24px;stroke:#FBF8F2;fill:none;stroke-width:1.6;transition:stroke .15s ease;}
+.tool-btn .lbl{font-family:'Space Grotesk', sans-serif;font-size:clamp(11px,1vw,12px);font-weight:600;line-height:1.25;color:#FBF8F2;}
+
+/* Same color set as the homepage's tool cards, cycled across all the More Tools cards */
+.card-1{ background:radial-gradient(circle at 32% 28%, #FF6B3E, #C7401B); }
+.card-1:hover{ box-shadow:0 14px 32px -8px rgba(255,90,54,0.55); }
+.card-2{ background:radial-gradient(circle at 32% 28%, #7B5CF0, #4B2FAE); }
+.card-2:hover{ box-shadow:0 14px 32px -8px rgba(107,71,230,0.55); }
+.card-3{ background:radial-gradient(circle at 32% 28%, #22C08E, #0E7E5B); }
+.card-3:hover{ box-shadow:0 14px 32px -8px rgba(34,192,142,0.55); }
+.card-4{ background:radial-gradient(circle at 32% 28%, #3B82F6, #1D4ED8); }
+.card-4:hover{ box-shadow:0 14px 32px -8px rgba(59,130,246,0.55); }
+.card-5{ background:radial-gradient(circle at 32% 28%, #E84393, #A81C5E); }
+.card-5:hover{ box-shadow:0 14px 32px -8px rgba(232,67,147,0.55); }
+.card-6{ background:radial-gradient(circle at 32% 28%, #FFC93C, #C99A12); }
+.card-6:hover{ box-shadow:0 14px 32px -8px rgba(255,201,60,0.55); }
+.card-7{ background:radial-gradient(circle at 32% 28%, #FF5163, #B3212F); }
+.card-7:hover{ box-shadow:0 14px 32px -8px rgba(255,81,99,0.55); }
+.card-8{ background:radial-gradient(circle at 32% 28%, #2FE6B8, #1C3A8C); }
+.card-8:hover{ box-shadow:0 14px 32px -8px rgba(47,230,184,0.55); }
+.card-9{ background:radial-gradient(circle at 32% 28%, #9B9B9B, #3A3A3A); }
+.card-9:hover{ box-shadow:0 14px 32px -8px rgba(155,155,155,0.55); }
 
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;box-shadow:0 1px 0 rgba(255,255,255,0.02) inset, 0 8px 24px rgba(0,0,0,0.18);}
 .panel .desc{color:var(--muted);font-size:13px;margin:0 0 18px;}
@@ -113,17 +152,39 @@ footer{margin-top:32px;text-align:center;color:var(--muted);font-size:12px;font-
 .sudoku .thick-r{border-right:2px solid var(--border);}
 .sudoku .thick-b{border-bottom:2px solid var(--border);}
 
-/* rubik's cube net */
-.cube-net{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:6px;max-width:420px;margin:18px auto;}
-.face-block{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;}
+/* rubik's cube net — styled to actually look like a cube: black plastic
+   body between stickers, rounded glossy tiles, and a letter on each
+   fixed center so it's obvious which face is which. */
+.cube-net{
+  display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);
+  gap:10px;max-width:440px;margin:18px auto;padding:14px;
+  background:#050506;border-radius:14px;
+  box-shadow:0 1px 0 rgba(255,255,255,0.04) inset, 0 10px 26px rgba(0,0,0,0.4);
+}
+.face-block{
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+  gap:4px;background:#050506;padding:4px;border-radius:8px;
+}
 .face-U{grid-column:2;grid-row:1;}
 .face-L{grid-column:1;grid-row:2;}
 .face-F{grid-column:2;grid-row:2;}
 .face-R{grid-column:3;grid-row:2;}
 .face-B{grid-column:4;grid-row:2;}
 .face-D{grid-column:2;grid-row:3;}
-.sticker{width:100%;aspect-ratio:1;border-radius:3px;border:1px solid rgba(0,0,0,0.35);cursor:pointer;}
+.sticker{
+  width:100%;aspect-ratio:1;border-radius:5px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 1px 0 rgba(255,255,255,0.45) inset, 0 -2px 3px rgba(0,0,0,0.25) inset;
+  transition:transform .1s ease;
+}
+.sticker:hover{transform:scale(0.94);}
 .sticker.locked{cursor:default;}
+.sticker.locked:hover{transform:none;}
+.face-label{
+  font-family:var(--mono);font-weight:700;font-size:12px;
+  color:rgba(0,0,0,0.55);text-shadow:0 1px 0 rgba(255,255,255,0.3);
+  pointer-events:none;user-select:none;
+}
 .color-picker{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
 .color-swatch{width:32px;height:32px;border-radius:6px;cursor:pointer;border:2px solid transparent;}
 .color-swatch.on{border-color:var(--accent);}
