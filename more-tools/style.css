@@ -185,6 +185,18 @@ footer{margin-top:32px;text-align:center;color:var(--muted);font-size:12px;font-
   touch-action:none;user-select:none;cursor:grab;
 }
 .cube3d-wrap:active{cursor:grabbing;}
+@media(max-width:640px){
+  /* Keep the cube pinned near the top of the screen on phones while you
+     scroll down to the color picker / buttons, so you can always see it
+     turn — simplest fix: make it sticky instead of scrolling away. */
+  .cube3d-wrap{
+    position:sticky;
+    top:0;
+    z-index:5;
+    background:var(--bg);
+    padding:14px 10px 10px;
+  }
+}
 .cube3d{
   position:relative;width:180px;height:180px;
   transform-style:preserve-3d;

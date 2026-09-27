@@ -152,6 +152,7 @@
   .card-9{ background:radial-gradient(circle at 32% 28%, #C77DFF, #6A2FB8); }
   .card-9:hover{ box-shadow:0 14px 32px -8px rgba(199,125,255,0.55); }
   @media(min-width:641px){
+    .home-center{ padding-top:110px; }
     .card-grid{ margin-top:18px; }
   }
 
@@ -357,7 +358,7 @@
     .tool-card{
       width:100%;
       height:auto;
-      aspect-ratio:1/1;
+      aspect-ratio:4/5;
       border-radius:16px;
       padding:8px;
     }
