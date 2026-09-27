@@ -1,30 +1,30 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="কোর্স ক্রেডিট আর গ্রেড দিয়ে GPA বা CGPA বের করার ক্যালকুলেটর।">
+<meta name="description" content="Work out your GPA or CGPA from course credits and grades.">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="shortcut icon" href="../favicon.ico">
 <link rel="icon" type="image/png" href="../favicon.png">
-<title>GPA / CGPA ক্যালকুলেটর — Forge</title>
+<title>GPA / CGPA Calculator — Forge</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="tool-topbar">
+  <a class="back-btn" href="../index.html"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>Home</a>
+  <span class="tt-name">GPA / CGPA Calculator</span>
+</div>
 <div class="wrap">
-  <a class="back" href="calculators.html">← ক্যালকুলেটর</a>
-  <div class="mark"><img src="../favicon.svg" alt="Forge" class="mark-icon">FORGE.</div>
-  <h1>GPA / CGPA ক্যালকুলেটর</h1>
-  <p class="sub">প্রতিটা কোর্সের ক্রেডিট আর গ্রেড দাও, ওয়েটেড GPA বের করে দেবে (৪.০০ স্কেল)।</p>
+  <h1>GPA / CGPA Calculator</h1>
+  <p class="sub">Enter each course's credit and grade to get a weighted GPA (4.00 scale).</p>
 
   <div class="panel">
     <div class="receipt-lines" id="gLines"></div>
-    <button class="btn ghost" id="gAddLine" type="button">+ কোর্স যোগ করো</button>
-    <button class="btn" id="gCalcBtn">GPA বের করো</button>
+    <button class="btn ghost" id="gAddLine" type="button">+ Add course</button>
+    <button class="btn" id="gCalcBtn">Calculate GPA</button>
     <div class="result" id="gResult" style="display:none"></div>
   </div>
-
-  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
 </div>
 
 <script src="common.js"></script>
@@ -37,10 +37,10 @@ function addLine(){
   const row = document.createElement('div');
   row.className='receipt-line';
   const opts = Object.keys(GRADE_POINTS).map(g=>`<option value="${g}">${g}</option>`).join('');
-  row.innerHTML = `<input type="text" placeholder="কোর্সের নাম (ঐচ্ছিক)" class="cname">
-    <input type="number" placeholder="ক্রেডিট" class="credit amt" step="0.5">
+  row.innerHTML = `<input type="text" placeholder="Course name (optional)" class="cname">
+    <input type="number" placeholder="Credit" class="credit amt" step="0.5">
     <select class="grade">${opts}</select>
-    <button type="button" class="remove-row-btn" title="বাদ দাও">✕</button>`;
+    <button type="button" class="remove-row-btn" title="Remove">✕</button>`;
   row.querySelector('.remove-row-btn').onclick = ()=>{
     if(linesWrap.children.length > 1) row.remove();
   };
@@ -65,13 +65,13 @@ gCalcBtn.onclick = ()=>{
   res.style.display='none'; void res.offsetWidth; res.style.display='block';
   if(totalCredit === 0){
     res.className = 'error-text';
-    res.innerHTML = `অন্তত একটা কোর্সের ক্রেডিট দাও`;
+    res.innerHTML = `Enter credit for at least one course`;
     return;
   }
   res.className = 'result';
   const gpa = totalPoints / totalCredit;
   res.innerHTML = `
-    <div class="stat-row"><span class="k">মোট ক্রেডিট</span><span class="v">${totalCredit}</span></div>
+    <div class="stat-row"><span class="k">Total credits</span><span class="v">${totalCredit}</span></div>
     <div class="stat-row"><span class="k">GPA / CGPA</span><span class="v">${gpa.toFixed(2)}</span></div>
   `;
 };

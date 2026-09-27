@@ -1,33 +1,33 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="যেকোনো সুডোকু পাজল সেকেন্ডে সলভ করে দেওয়ার ফ্রি টুল।">
+<meta name="description" content="Free tool that solves any sudoku puzzle in seconds.">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="shortcut icon" href="../favicon.ico">
 <link rel="icon" type="image/png" href="../favicon.png">
-<title>সুডোকু সলভার — Forge</title>
+<title>Sudoku Solver — Forge</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="tool-topbar">
+  <a class="back-btn" href="../index.html"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>Home</a>
+  <span class="tt-name">Sudoku Solver</span>
+</div>
 <div class="wrap">
-  <a class="back" href="index.html">← সব টুল</a>
-  <div class="mark"><img src="../favicon.svg" alt="Forge" class="mark-icon">FORGE.</div>
-  <h1>সুডোকু সলভার</h1>
-  <p class="sub">যে সংখ্যাগুলো জানা আছে সেগুলো বসাও, বাকিগুলো খালি রাখো — সলভ করলে পুরো গ্রিড ভরে দেবে।</p>
+  <h1>Sudoku Solver</h1>
+  <p class="sub">Enter the numbers you already know, leave the rest blank — solving fills in the whole grid.</p>
 
   <div class="panel">
     <div class="sudoku" id="grid"></div>
     <div class="row" style="margin-top:16px">
-      <button class="btn" id="solveBtn">সলভ করো</button>
-      <button class="btn ghost" id="clearBtn" type="button">খালি করো</button>
-      <button class="btn ghost" id="exampleBtn" type="button">উদাহরণ</button>
+      <button class="btn" id="solveBtn">Solve</button>
+      <button class="btn ghost" id="clearBtn" type="button">Clear</button>
+      <button class="btn ghost" id="exampleBtn" type="button">Example</button>
     </div>
     <div class="result" id="sudokuMsg" style="display:none"></div>
   </div>
-
-  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
 </div>
 
 <script src="common.js"></script>
@@ -115,15 +115,15 @@ solveBtn.onclick = ()=>{
   const board = readBoard();
   const msg = document.getElementById('sudokuMsg');
   solveBtn.disabled = true;
-  solveBtn.innerHTML = '<span class="spinner"></span>সলভ হচ্ছে...';
+  solveBtn.innerHTML = '<span class="spinner"></span>Solving...';
   setTimeout(()=>{
     const solved = solveBoard(board);
     solveBtn.disabled = false;
-    solveBtn.textContent = 'সলভ করো';
+    solveBtn.textContent = 'Solve';
     if(!solved){
       msg.className = 'error-text';
       msg.style.display='block';
-      msg.textContent = 'এই পাজলটা সলভ করা যাচ্ছে না — সংখ্যাগুলো আবার চেক করো।';
+      msg.textContent = "This puzzle can't be solved — double check the numbers.";
       return;
     }
     for(let r=0;r<9;r++) for(let c=0;c<9;c++) cells[r][c].value = board[r][c];

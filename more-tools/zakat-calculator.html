@@ -1,46 +1,46 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="নিসাব অনুযায়ী জাকাত হিসাব করার ফ্রি ক্যালকুলেটর।">
+<meta name="description" content="Free zakat calculator based on the nisab threshold.">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="shortcut icon" href="../favicon.ico">
 <link rel="icon" type="image/png" href="../favicon.png">
-<title>জাকাত ক্যালকুলেটর — Forge</title>
+<title>Zakat Calculator — Forge</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="tool-topbar">
+  <a class="back-btn" href="../index.html"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>Home</a>
+  <span class="tt-name">Zakat Calculator</span>
+</div>
 <div class="wrap">
-  <a class="back" href="calculators.html">← ক্যালকুলেটর</a>
-  <div class="mark"><img src="../favicon.svg" alt="Forge" class="mark-icon">FORGE.</div>
-  <h1>জাকাত ক্যালকুলেটর</h1>
-  <p class="sub">সম্পদের হিসাব দাও, নিসাব অনুযায়ী জাকাত (২.৫%) কতটুকু আসে তা বের করে দেবে। স্বর্ণ/রূপার আজকের রেট নিজে বসাও।</p>
+  <h1>Zakat Calculator</h1>
+  <p class="sub">Enter your assets and we'll work out zakat (2.5%) against the nisab. Enter today's gold/silver rate yourself.</p>
 
   <div class="panel">
-    <label>হাতে/ব্যাংকে নগদ টাকা</label>
+    <label>Cash in hand / bank</label>
     <input type="number" id="zCash" placeholder="0">
 
     <div class="row">
-      <div><label>সোনার পরিমাণ (গ্রাম)</label><input type="number" id="zGoldG" placeholder="0"></div>
-      <div><label>সোনার আজকের রেট (প্রতি গ্রাম)</label><input type="number" id="zGoldRate" placeholder="যেমন: 12000"></div>
+      <div><label>Gold amount (grams)</label><input type="number" id="zGoldG" placeholder="0"></div>
+      <div><label>Today's gold rate (per gram)</label><input type="number" id="zGoldRate" placeholder="e.g. 12000"></div>
     </div>
     <div class="row">
-      <div><label>রূপার পরিমাণ (গ্রাম)</label><input type="number" id="zSilverG" placeholder="0"></div>
-      <div><label>রূপার আজকের রেট (প্রতি গ্রাম)</label><input type="number" id="zSilverRate" placeholder="যেমন: 150"></div>
+      <div><label>Silver amount (grams)</label><input type="number" id="zSilverG" placeholder="0"></div>
+      <div><label>Today's silver rate (per gram)</label><input type="number" id="zSilverRate" placeholder="e.g. 150"></div>
     </div>
-    <label>অন্যান্য জাকাতযোগ্য সম্পদ (ব্যবসার মাল, শেয়ার ইত্যাদি)</label>
+    <label>Other zakatable assets (business goods, shares, etc.)</label>
     <input type="number" id="zOther" placeholder="0">
-    <label>ঋণ / দেনা (যা পরিশোধ করতে হবে)</label>
+    <label>Debts owed (to be repaid)</label>
     <input type="number" id="zDebt" placeholder="0">
 
-    <button class="btn" id="zBtn">জাকাত হিসাব করো</button>
+    <button class="btn" id="zBtn">Calculate zakat</button>
     <div class="error-text" id="zError" style="display:none"></div>
     <div class="result" id="zResult" style="display:none"></div>
-    <p class="muted-note">নিসাব হিসাব করা হয়েছে রূপার মান অনুযায়ী (৬১২.৩৬ গ্রাম রূপার সমমূল্য) — এটাই বেশিরভাগ ক্ষেত্রে বেশি মানুষের জন্য প্রযোজ্য হিসাব।</p>
+    <p class="muted-note">Nisab is calculated using the silver standard (value of 612.36g of silver) — the threshold that applies to most people.</p>
   </div>
-
-  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
 </div>
 
 <script src="common.js"></script>
@@ -58,7 +58,7 @@ zBtn.onclick = ()=>{
   const other = parseFloat(document.getElementById('zOther').value)||0;
   const debt = parseFloat(document.getElementById('zDebt').value)||0;
 
-  if(!silverRate){ showError(zError, 'নিসাব হিসাবের জন্য রূপার আজকের রেট দিতে হবে'); zResult.style.display='none'; return; }
+  if(!silverRate){ showError(zError, "Today's silver rate is needed to work out the nisab"); zResult.style.display='none'; return; }
   clearMsg(zError);
 
   const goldValue = goldG * goldRate;
@@ -70,10 +70,10 @@ zBtn.onclick = ()=>{
 
   zResult.style.display='none'; void zResult.offsetWidth; zResult.style.display='block';
   zResult.innerHTML = `
-    <div class="stat-row"><span class="k">মোট জাকাতযোগ্য সম্পদ</span><span class="v">৳${totalWealth.toFixed(2)}</span></div>
-    <div class="stat-row"><span class="k">নিসাব (৬১২.৩৬গ্রাম রূপা)</span><span class="v">৳${nisab.toFixed(2)}</span></div>
-    <div class="stat-row"><span class="k">নিসাব অতিক্রম করেছে?</span><span class="v">${eligible ? 'হ্যাঁ' : 'না'}</span></div>
-    <div class="stat-row"><span class="k">প্রদেয় জাকাত (২.৫%)</span><span class="v">৳${zakat.toFixed(2)}</span></div>
+    <div class="stat-row"><span class="k">Total zakatable wealth</span><span class="v">৳${totalWealth.toFixed(2)}</span></div>
+    <div class="stat-row"><span class="k">Nisab (612.36g silver)</span><span class="v">৳${nisab.toFixed(2)}</span></div>
+    <div class="stat-row"><span class="k">Above the nisab?</span><span class="v">${eligible ? 'Yes' : 'No'}</span></div>
+    <div class="stat-row"><span class="k">Zakat due (2.5%)</span><span class="v">৳${zakat.toFixed(2)}</span></div>
   `;
 };
 onEnter([document.getElementById('zCash'),document.getElementById('zGoldG'),document.getElementById('zGoldRate'),document.getElementById('zSilverG'),document.getElementById('zSilverRate'),document.getElementById('zOther'),document.getElementById('zDebt')], zBtn);

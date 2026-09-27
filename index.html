@@ -46,9 +46,17 @@
       <div id="qr-choice-popover" class="hidden popover-overlay">
         <div class="popover-box">
           <h3>QR Code</h3>
-          <a class="action brass" href="qr-generator.html" style="display:block; text-decoration:none; box-sizing:border-box;">Generate QR code</a>
+          <button class="action brass" id="qr-generate-trigger" type="button" style="display:block; width:100%; text-decoration:none; box-sizing:border-box;">Generate QR code</button>
           <a class="action" href="scan.html" style="display:block; text-decoration:none; box-sizing:border-box; margin-top:10px;">Scan</a>
           <button class="popover-close" id="qr-choice-close" style="margin-top:14px;">Cancel</button>
+        </div>
+      </div>
+      <div id="qr-generate-popover" class="hidden popover-overlay">
+        <div class="popover-box">
+          <h3>Generate QR code</h3>
+          <a class="action brass" href="qr-generator.html" style="display:block; text-decoration:none; box-sizing:border-box;">QR Code</a>
+          <a class="action" href="wifi-qr.html" style="display:block; text-decoration:none; box-sizing:border-box; margin-top:10px;">WiFi QR</a>
+          <button class="popover-close" id="qr-generate-close" style="margin-top:14px;">Cancel</button>
         </div>
       </div>
       <a class="tool-card card-7" href="background-remover.html">
@@ -132,6 +140,14 @@ qrTrigger.addEventListener('click', ()=> qrPopover.classList.remove('hidden'));
 qrTrigger.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') qrPopover.classList.remove('hidden'); });
 document.getElementById('qr-choice-close').addEventListener('click', ()=> qrPopover.classList.add('hidden'));
 qrPopover.addEventListener('click', (e)=>{ if(e.target === qrPopover) qrPopover.classList.add('hidden'); });
+
+const qrGeneratePopover = document.getElementById('qr-generate-popover');
+document.getElementById('qr-generate-trigger').addEventListener('click', ()=>{
+  qrPopover.classList.add('hidden');
+  qrGeneratePopover.classList.remove('hidden');
+});
+document.getElementById('qr-generate-close').addEventListener('click', ()=> qrGeneratePopover.classList.add('hidden'));
+qrGeneratePopover.addEventListener('click', (e)=>{ if(e.target === qrGeneratePopover) qrGeneratePopover.classList.add('hidden'); });
 </script>
 
 </body>

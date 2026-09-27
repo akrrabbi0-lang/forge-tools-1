@@ -1,45 +1,61 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="তোমার রুবিক্স কিউবের রং বসাও, সলভ করার ধাপে ধাপে মুভ পেয়ে যাও।">
+<meta name="description" content="Enter your Rubik's Cube colors and get a step-by-step solve.">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="shortcut icon" href="../favicon.ico">
 <link rel="icon" type="image/png" href="../favicon.png">
-<title>Rubik's Cube সলভার — Forge</title>
+<title>Rubik's Cube Solver — Forge</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="tool-topbar">
+  <a class="back-btn" href="../index.html"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>Home</a>
+  <span class="tt-name">Rubik's Cube Solver</span>
+</div>
 <div class="wrap">
-  <a class="back" href="index.html">← সব টুল</a>
-  <div class="mark"><img src="../favicon.svg" alt="Forge" class="mark-icon">FORGE.</div>
-  <h1>Rubik's Cube সলভার</h1>
-  <p class="sub">কিউবটা এভাবে ধরো: <strong>সাদা উপরে, সবুজ তোমার দিকে (সামনে)</strong>। এই অবস্থান ঠিক রেখে প্রতিটা ফেস ঘুরিয়ে ঘুরিয়ে নিচের নেট-এ রং বসাও। মাঝের ঘর (সেন্টার) ফিক্সড, ওটা বদলাবে না।</p>
+  <h1>Rubik's Cube Solver</h1>
+  <p class="sub">Hold the cube like this: <strong>white on top, green facing you (front)</strong>. Keeping that orientation, spin the 3D cube below and fill in each face's colors. The center square is fixed and won't change.</p>
 
   <div class="panel">
     <div class="color-picker" id="colorPicker">
-      <div class="color-swatch on" style="background:#f5f5f0" data-color="U" title="সাদা (উপর)" tabindex="0" role="button"></div>
-      <div class="color-swatch" style="background:#ffd400" data-color="D" title="হলুদ (নিচ)" tabindex="0" role="button"></div>
-      <div class="color-swatch" style="background:#e2231a" data-color="R" title="লাল (ডান)" tabindex="0" role="button"></div>
-      <div class="color-swatch" style="background:#ff8a00" data-color="L" title="কমলা (বাম)" tabindex="0" role="button"></div>
-      <div class="color-swatch" style="background:#009e4f" data-color="F" title="সবুজ (সামনে)" tabindex="0" role="button"></div>
-      <div class="color-swatch" style="background:#0057b7" data-color="B" title="নীল (পেছন)" tabindex="0" role="button"></div>
+      <div class="color-swatch on" style="background:#f5f5f0" data-color="U" title="White (Up)" tabindex="0" role="button"></div>
+      <div class="color-swatch" style="background:#ffd400" data-color="D" title="Yellow (Down)" tabindex="0" role="button"></div>
+      <div class="color-swatch" style="background:#e2231a" data-color="R" title="Red (Right)" tabindex="0" role="button"></div>
+      <div class="color-swatch" style="background:#ff8a00" data-color="L" title="Orange (Left)" tabindex="0" role="button"></div>
+      <div class="color-swatch" style="background:#009e4f" data-color="F" title="Green (Front)" tabindex="0" role="button"></div>
+      <div class="color-swatch" style="background:#0057b7" data-color="B" title="Blue (Back)" tabindex="0" role="button"></div>
     </div>
 
-    <div class="cube-net" id="cubeNet"></div>
-    <p class="muted-note" style="margin-top:-8px;">প্রতিটা ছোট বর্গ = কিউবের একটা স্টিকার। মাঝের বর্গ (যেখানে হাল্কা করে ফেসের নাম লেখা) ফিক্সড — ওখানে ক্লিক করা লাগবে না। বাকি ৮টা ঘরে (কোণা আর পাশের ঘর) ক্লিক করে আসল কিউব দেখে দেখে রং বসাও।</p>
+    <div class="cube3d-wrap" id="cube3dWrap">
+      <div class="cube3d" id="cube3d"></div>
+    </div>
+    <p class="muted-note" style="margin-top:2px;">Drag with your mouse or finger to spin the cube and see every face, then click a square to paint it, matching your real cube. The center square (with the face letter on it) is fixed — no need to click it.</p>
 
     <div class="row" style="margin-top:16px">
-      <button class="btn" id="solveBtn">সলভ করো</button>
-      <button class="btn ghost" id="resetBtn" type="button">রিসেট</button>
+      <button class="btn" id="solveBtn">Solve</button>
+      <button class="btn ghost" id="resetBtn" type="button">Reset</button>
     </div>
     <div class="result" id="cubeMsg" style="display:none"></div>
     <div class="solve-steps" id="cubeSteps"></div>
-    <p class="muted-note">নোটেশন: U=উপর, D=নিচ, F=সামনে, B=পেছন, L=বাম, R=ডান। শুধু অক্ষর মানে সেই ফেস ঘড়ির কাঁটার দিকে ৯০°, ' মানে উল্টো দিকে, 2 মানে ১৮০°। এটা কিউব সলভ করার একটা বৈধ পথ দেখাবে, সবসময় সবচেয়ে কম চাল-এ নাও হতে পারে।</p>
+    <div class="row" id="startPlaybackRow" style="display:none;margin-top:14px;">
+      <button class="btn" id="startPlaybackBtn" type="button">▶ Show step by step</button>
+    </div>
+    <div id="playback" class="playback" style="display:none;">
+      <div class="playback-info">
+        <span id="stepLabel">Step 1 / 1</span>
+        <span id="stepMoveLabel">R</span>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn ghost" id="backStepBtn" type="button">← Back</button>
+        <button class="btn" id="nextStepBtn" type="button">Next →</button>
+      </div>
+    </div>
+    <p class="muted-note">Notation: U=Up, D=Down, F=Front, B=Back, L=Left, R=Right. A plain letter means turn that face 90° clockwise, ' means counter-clockwise, 2 means 180°. This gives a valid way to solve the cube, not always in the fewest possible moves.</p>
   </div>
 
-  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
 </div>
 
 <script>
@@ -2087,19 +2103,19 @@ const FACE_COLORS = {
   U: '#f5f5f0', D: '#ffd400', R: '#e2231a', L: '#ff8a00', F: '#009e4f', B: '#0057b7'
 };
 const FACE_ORDER = ['U','R','F','D','L','B'];
-const net = document.getElementById('cubeNet');
+const cube3d = document.getElementById('cube3d');
 const stickerEls = {}; // key "U0".."U8" etc -> element
 
 FACE_ORDER.forEach(face=>{
   const block = document.createElement('div');
-  block.className = 'face-block face-'+face;
+  block.className = 'face3d face3d-'+face;
   for(let i=0;i<9;i++){
     const s = document.createElement('div');
     s.className = 'sticker';
-    s.style.background = FACE_COLORS[face];
     s.dataset.face = face;
     s.dataset.idx = i;
     if(i===4){
+      s.style.background = FACE_COLORS[face];
       s.classList.add('locked');
       s.dataset.fixed = face;
       const label = document.createElement('span');
@@ -2107,20 +2123,63 @@ FACE_ORDER.forEach(face=>{
       label.textContent = face;
       s.appendChild(label);
     } else {
-      s.dataset.fixed = face; // default: matches face (solved state)
+      // Start blank (plain white, no color) so it's obvious which
+      // squares are still unfilled — only the fixed center is pre-colored.
+      s.style.background = '#ffffff';
+      s.classList.add('unset');
+      s.dataset.fixed = '';
       s.tabIndex = 0;
       s.setAttribute('role','button');
       const paint = ()=>{
         s.dataset.fixed = activeColor;
         s.style.background = FACE_COLORS[activeColor];
+        s.classList.remove('unset');
       };
       s.onclick = paint;
       s.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); paint(); } });
     }
-    net.appendChild(s);
+    block.appendChild(s);
     stickerEls[face+i] = s;
   }
+  cube3d.appendChild(block);
 });
+
+// Drag (mouse or touch) to spin the cube around and see every face,
+// same idea as physically turning a cube in your hands.
+(function enableDragRotate(){
+  const wrap = document.getElementById('cube3dWrap');
+  let rotX = -20, rotY = 35;
+  let dragging = false, moved = false, lastX = 0, lastY = 0;
+
+  function apply(){ cube3d.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`; }
+
+  function start(x, y){ dragging = true; moved = false; lastX = x; lastY = y; }
+  function move(x, y){
+    if(!dragging) return;
+    const dx = x - lastX, dy = y - lastY;
+    if(Math.abs(dx) + Math.abs(dy) > 3) moved = true;
+    rotY += dx * 0.5;
+    rotX -= dy * 0.5;
+    rotX = Math.max(-89, Math.min(89, rotX));
+    lastX = x; lastY = y;
+    apply();
+  }
+  function end(){ dragging = false; }
+
+  wrap.addEventListener('mousedown', e=>{ start(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', e=>{ move(e.clientX, e.clientY); });
+  window.addEventListener('mouseup', end);
+
+  wrap.addEventListener('touchstart', e=>{ const t=e.touches[0]; start(t.clientX, t.clientY); }, {passive:true});
+  wrap.addEventListener('touchmove', e=>{ const t=e.touches[0]; move(t.clientX, t.clientY); e.preventDefault(); }, {passive:false});
+  wrap.addEventListener('touchend', end);
+
+  // If the pointer moved (a drag), swallow the click that follows so a
+  // rotate doesn't accidentally paint whatever sticker ends up under it.
+  wrap.addEventListener('click', e=>{ if(moved){ e.stopPropagation(); e.preventDefault(); } }, true);
+
+  apply();
+})();
 
 let activeColor = 'U';
 document.querySelectorAll('.color-swatch').forEach(sw=>{
@@ -2137,12 +2196,21 @@ document.getElementById('resetBtn').onclick = ()=>{
   FACE_ORDER.forEach(face=>{
     for(let i=0;i<9;i++){
       const s = stickerEls[face+i];
-      s.dataset.fixed = face;
-      s.style.background = FACE_COLORS[face];
+      if(i===4){
+        s.dataset.fixed = face;
+        s.style.background = FACE_COLORS[face];
+      } else {
+        s.dataset.fixed = '';
+        s.style.background = '#ffffff';
+        s.classList.add('unset');
+      }
     }
   });
   document.getElementById('cubeMsg').style.display='none';
   document.getElementById('cubeSteps').innerHTML='';
+  document.getElementById('startPlaybackRow').style.display='none';
+  document.getElementById('playback').style.display='none';
+  playback = null;
 };
 
 function buildFaceletString(){
@@ -2202,10 +2270,14 @@ solveBtn.onclick = ()=>{
   msg.className = 'error-text';
 
   const facelets = buildFaceletString();
+  if(facelets.length < 54){
+    msg.innerHTML = "You haven't colored every square yet — click the blank (white) squares to fill in the rest.";
+    return;
+  }
   const counts = countColors(facelets);
   const badColor = FACE_ORDER.find(f => counts[f] !== 9);
   if(badColor){
-    msg.innerHTML = `প্রতিটা রং ঠিক ৯টা করে থাকতে হবে — এখন কোনো একটা রং এর সংখ্যা মিলছে না। আবার চেক করো।`;
+    msg.innerHTML = `Each color needs to appear exactly 9 times — one of the colors doesn't match up right now. Double check it.`;
     return;
   }
 
@@ -2213,18 +2285,18 @@ solveBtn.onclick = ()=>{
 
   if(cube.isSolved()){
     msg.className = 'result';
-    msg.innerHTML = 'কিউবটা এমনিতেই সলভড!';
+    msg.innerHTML = 'The cube is already solved!';
     return;
   }
   if(!isLegalCube(cube)){
-    msg.innerHTML = 'এই কম্বিনেশনটা বৈধ (সম্ভব) কোনো রিয়েল কিউবের অবস্থা না — কোনো একটা স্টিকার ভুল জায়গায় বসেছে হয়তো। রংগুলো আরেকবার মিলিয়ে দেখো।';
+    msg.innerHTML = "This combination isn't a valid, possible state for a real cube — a sticker is probably in the wrong spot. Double check the colors.";
     return;
   }
 
   msg.className = 'result';
-  msg.innerHTML = solverReady ? 'সলভ করা হচ্ছে...' : 'সলভার লোড হচ্ছে, প্রথমবার একটু সময় লাগবে (৪-৫ সেকেন্ড)...';
+  msg.innerHTML = solverReady ? 'Solving...' : 'Loading the solver, this takes a few seconds the first time...';
   solveBtn.disabled = true;
-  solveBtn.innerHTML = '<span class="spinner"></span>সলভ হচ্ছে...';
+  solveBtn.innerHTML = '<span class="spinner"></span>Solving...';
 
   setTimeout(()=>{
     try{
@@ -2234,19 +2306,134 @@ solveBtn.onclick = ()=>{
       }
       const solution = cube.solve();
       if(!solution || solution.trim()===''){
-        msg.innerHTML = 'কিউবটা এমনিতেই সলভড!';
+        msg.innerHTML = 'The cube is already solved!';
         return;
       }
       msg.style.display = 'none';
-      stepsWrap.innerHTML = solution.trim().split(/\s+/).map(m=>`<span>${m}</span>`).join('');
+      const moves = solution.trim().split(/\s+/);
+      stepsWrap.innerHTML = moves.map((m,i)=>`<span id="mv-${i}">${m}</span>`).join('');
+
+      // Pre-compute the facelet string after every move, up front, so
+      // stepping Back/Next later is instant and can never desync from
+      // the actual solve — no re-deriving state on the fly.
+      const snapshots = [cube.asString()];
+      const stepCube = cube.clone();
+      moves.forEach(mv=>{ stepCube.move(mv); snapshots.push(stepCube.asString()); });
+
+      setupPlayback(moves, snapshots);
     } catch(e){
       msg.className = 'error-text';
-      msg.innerHTML = 'এই কম্বিনেশনটা সলভ করা যাচ্ছে না — রংগুলো আরেকবার মিলিয়ে দেখো।';
+      msg.innerHTML = "This combination can't be solved — double check the colors.";
     } finally {
       solveBtn.disabled = false;
-      solveBtn.textContent = 'সলভ করো';
+      solveBtn.textContent = 'Solve';
     }
   }, 30);
+};
+
+// ---------- Step-by-step playback (like the move-walkthrough on real
+// cube-solving websites): Start button, then Next/Back to step through
+// each move one at a time, with the matching face visibly spinning and
+// its affected layer highlighted on the 3D cube. ----------
+
+// Which 3 stickers on each of the 4 neighboring faces belong to the same
+// physical layer as a given face turn — fixed cube geometry, independent
+// of any solving-library indexing convention.
+const LAYER_TOUCH = {
+  U: [['F',[0,1,2]], ['R',[0,1,2]], ['B',[0,1,2]], ['L',[0,1,2]]],
+  D: [['F',[6,7,8]], ['R',[6,7,8]], ['B',[6,7,8]], ['L',[6,7,8]]],
+  F: [['U',[6,7,8]], ['R',[0,3,6]], ['D',[0,1,2]], ['L',[2,5,8]]],
+  B: [['U',[0,1,2]], ['L',[0,3,6]], ['D',[6,7,8]], ['R',[2,5,8]]],
+  R: [['U',[2,5,8]], ['F',[2,5,8]], ['D',[2,5,8]], ['B',[0,3,6]]],
+  L: [['U',[0,3,6]], ['F',[0,3,6]], ['D',[0,3,6]], ['B',[2,5,8]]],
+};
+const MOVE_LABEL = { U:'Up', D:'Down', F:'Front', B:'Back', L:'Left', R:'Right' };
+
+let playback = null; // { moves, snapshots, step }
+
+function applyFaceletString(str){
+  let k = 0;
+  FACE_ORDER.forEach(face=>{
+    for(let i=0;i<9;i++){
+      const color = str[k++];
+      const s = stickerEls[face+i];
+      s.dataset.fixed = color;
+      s.style.background = FACE_COLORS[color];
+      s.classList.remove('unset');
+    }
+  });
+}
+
+function highlightLayer(faceLetter, on){
+  const block = document.querySelector('.face3d-'+faceLetter);
+  block.querySelectorAll('.sticker').forEach(s=>s.classList.toggle('active-layer', on));
+  (LAYER_TOUCH[faceLetter]||[]).forEach(([face, idxs])=>{
+    idxs.forEach(i=> stickerEls[face+i].classList.toggle('active-layer', on));
+  });
+}
+
+function spinFace(faceLetter, moveSuffix){
+  const block = document.querySelector('.face3d-'+faceLetter);
+  const deg = moveSuffix === "'" ? -90 : moveSuffix === '2' ? 180 : 90;
+  block.style.setProperty('--spin', deg+'deg');
+  return new Promise(resolve=>{
+    setTimeout(()=>{
+      // snap back to 0 instantly (no transition) so the face stays square
+      // with its neighbours once the new colors are painted on
+      block.style.transition = 'none';
+      block.style.setProperty('--spin', '0deg');
+      void block.offsetWidth; // force reflow so the reset itself doesn't animate
+      block.style.transition = '';
+      resolve();
+    }, 450);
+  });
+}
+
+function setupPlayback(moves, snapshots){
+  playback = { moves, snapshots, step: 0 };
+  document.getElementById('startPlaybackRow').style.display = 'flex';
+  document.getElementById('playback').style.display = 'none';
+  document.getElementById('startPlaybackBtn').onclick = ()=>{
+    document.getElementById('startPlaybackRow').style.display = 'none';
+    document.getElementById('playback').style.display = 'block';
+    applyFaceletString(playback.snapshots[0]);
+    renderStepLabel();
+  };
+}
+
+function renderStepLabel(){
+  const { moves, step } = playback;
+  document.getElementById('stepLabel').textContent = `Step ${step} / ${moves.length}`;
+  document.getElementById('stepMoveLabel').textContent = step < moves.length ? moves[step] : '✓ Solved!';
+  document.getElementById('backStepBtn').disabled = step === 0;
+  document.getElementById('nextStepBtn').disabled = step >= moves.length;
+  document.querySelectorAll('.solve-steps span').forEach((el,i)=>{
+    el.classList.toggle('done', i < step);
+    el.classList.toggle('current', i === step && step < moves.length);
+  });
+}
+
+document.getElementById('nextStepBtn').onclick = async ()=>{
+  if(!playback || playback.step >= playback.moves.length) return;
+  const nextBtn = document.getElementById('nextStepBtn');
+  const backBtn = document.getElementById('backStepBtn');
+  nextBtn.disabled = true; backBtn.disabled = true;
+
+  const move = playback.moves[playback.step];
+  const face = move[0], suffix = move.slice(1);
+  highlightLayer(face, true);
+  await spinFace(face, suffix);
+  playback.step++;
+  applyFaceletString(playback.snapshots[playback.step]);
+  highlightLayer(face, false);
+  renderStepLabel();
+};
+
+document.getElementById('backStepBtn').onclick = ()=>{
+  if(!playback || playback.step <= 0) return;
+  playback.step--;
+  applyFaceletString(playback.snapshots[playback.step]);
+  renderStepLabel();
 };
 </script>
 </body>

@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="দোকান বা ছোট লেনদেনের জন্য প্রিন্ট করার মতো রিসিট বা ভাউচার বানানোর ফ্রি টুল।">
+<meta name="description" content="Free tool to make a printable receipt or voucher for a shop or small transaction.">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="shortcut icon" href="../favicon.ico">
 <link rel="icon" type="image/png" href="../favicon.png">
-<title>রিসিট / ভাউচার জেনারেটর — Forge</title>
+<title>Receipt / Voucher Generator — Forge</title>
 <link rel="stylesheet" href="style.css">
 <style>
   @media print{
@@ -18,26 +18,26 @@
 </style>
 </head>
 <body>
+<div class="tool-topbar">
+  <a class="back-btn" href="../index.html"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>Home</a>
+  <span class="tt-name">Receipt / Voucher Generator</span>
+</div>
 <div class="wrap">
-  <a class="back" href="index.html">← সব টুল</a>
-  <div class="mark"><img src="../favicon.svg" alt="Forge" class="mark-icon">FORGE.</div>
-  <h1>রিসিট / ভাউচার জেনারেটর</h1>
-  <p class="sub">দোকান বা ছোট লেনদেনের জন্য প্রিন্ট করার মতো একটা রিসিট বানাও।</p>
+  <h1>Receipt / Voucher Generator</h1>
+  <p class="sub">Make a printable receipt for a shop or small transaction.</p>
 
   <div class="panel">
-    <label>দোকান / ব্যবসার নাম</label>
-    <input type="text" id="rShop" placeholder="যেমন: রহমান স্টোর">
-    <label>কাস্টমারের নাম (ঐচ্ছিক)</label>
+    <label>Shop / business name</label>
+    <input type="text" id="rShop" placeholder="e.g. Rahman Store">
+    <label>Customer name (optional)</label>
     <input type="text" id="rCust" placeholder="">
-    <label>আইটেম লিস্ট</label>
+    <label>Item list</label>
     <div class="receipt-lines" id="rLines"></div>
-    <button class="btn ghost" id="rAddLine" type="button">+ আইটেম যোগ করো</button>
-    <button class="btn" id="rGenBtn">রিসিট বানাও</button>
+    <button class="btn ghost" id="rAddLine" type="button">+ Add item</button>
+    <button class="btn" id="rGenBtn">Generate receipt</button>
     <div class="receipt-preview" id="rPreview" style="display:none"></div>
-    <button class="btn ghost" id="rPrintBtn" type="button" style="display:none">🖨 প্রিন্ট করো</button>
+    <button class="btn ghost" id="rPrintBtn" type="button" style="display:none">🖨 Print</button>
   </div>
-
-  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
 </div>
 
 <script src="common.js"></script>
@@ -46,7 +46,7 @@ const linesWrap = document.getElementById('rLines');
 function addLine(){
   const row = document.createElement('div');
   row.className='receipt-line';
-  row.innerHTML = `<input type="text" placeholder="আইটেমের নাম" class="itm"><input type="number" placeholder="দাম" class="amt"><button type="button" class="remove-row-btn" title="বাদ দাও">✕</button>`;
+  row.innerHTML = `<input type="text" placeholder="Item name" class="itm"><input type="number" placeholder="Price" class="amt"><button type="button" class="remove-row-btn" title="Remove">✕</button>`;
   row.querySelector('.remove-row-btn').onclick = ()=>{
     if(linesWrap.children.length > 1) row.remove();
   };
@@ -57,7 +57,7 @@ document.getElementById('rAddLine').onclick = addLine;
 
 const rGenBtn = document.getElementById('rGenBtn');
 rGenBtn.onclick = ()=>{
-  const shop = document.getElementById('rShop').value.trim() || 'দোকানের নাম';
+  const shop = document.getElementById('rShop').value.trim() || 'Shop Name';
   const cust = document.getElementById('rCust').value.trim();
   const items = Array.from(linesWrap.querySelectorAll('.receipt-line')).map(r=>{
     const name = r.querySelector('.itm').value.trim();
@@ -70,7 +70,7 @@ rGenBtn.onclick = ()=>{
   if(cust) out += `Customer: ${cust}\n`;
   out += `Date: ${date}\n${'-'.repeat(28)}\n`;
   items.forEach(i=> out += `${i.name.padEnd(18)} ${('৳'+i.amt.toFixed(2)).padStart(9)}\n`);
-  out += `${'-'.repeat(28)}\nTotal: ৳${total.toFixed(2)}\n${'-'.repeat(28)}\nধন্যবাদ!`;
+  out += `${'-'.repeat(28)}\nTotal: ৳${total.toFixed(2)}\n${'-'.repeat(28)}\nThank you!`;
   const prev = document.getElementById('rPreview');
   prev.style.display='none'; void prev.offsetWidth; prev.style.display='block';
   prev.textContent = out;

@@ -1,31 +1,31 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="জন্ম তারিখ দিয়ে সঠিক বয়স, মোট দিন আর পরের জন্মদিন কতদিন বাকি বের করার ক্যালকুলেটর।">
+<meta name="description" content="Enter a birth date to get exact age, total days lived, and days left to the next birthday.">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="shortcut icon" href="../favicon.ico">
 <link rel="icon" type="image/png" href="../favicon.png">
-<title>বয়স ক্যালকুলেটর — Forge</title>
+<title>Age Calculator — Forge</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="tool-topbar">
+  <a class="back-btn" href="../index.html"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>Home</a>
+  <span class="tt-name">Age Calculator</span>
+</div>
 <div class="wrap">
-  <a class="back" href="calculators.html">← ক্যালকুলেটর</a>
-  <div class="mark"><img src="../favicon.svg" alt="Forge" class="mark-icon">FORGE.</div>
-  <h1>বয়স ক্যালকুলেটর</h1>
-  <p class="sub">জন্ম তারিখ দাও, সঠিক বয়স আর পরের জন্মদিন কতদিন পর জেনে নাও।</p>
+  <h1>Age Calculator</h1>
+  <p class="sub">Enter a birth date to find the exact age and days left to the next birthday.</p>
 
   <div class="panel">
-    <label>জন্ম তারিখ</label>
+    <label>Date of birth</label>
     <input type="date" id="dob">
-    <button class="btn" id="calcBtn">বয়স বের করো</button>
+    <button class="btn" id="calcBtn">Calculate age</button>
     <div class="error-text" id="ageError" style="display:none"></div>
     <div class="result" id="ageResult" style="display:none"></div>
   </div>
-
-  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
 </div>
 
 <script src="common.js"></script>
@@ -35,10 +35,10 @@ const ageError = document.getElementById('ageError');
 const ageResult = document.getElementById('ageResult');
 calcBtn.onclick = ()=>{
   const val = document.getElementById('dob').value;
-  if(!val){ showError(ageError, 'জন্ম তারিখ দাও'); ageResult.style.display='none'; return; }
+  if(!val){ showError(ageError, 'Please enter a date of birth'); ageResult.style.display='none'; return; }
   const dob = new Date(val);
   const today = new Date();
-  if(dob > today){ showError(ageError, 'জন্ম তারিখ ভবিষ্যতের হতে পারে না'); ageResult.style.display='none'; return; }
+  if(dob > today){ showError(ageError, 'Date of birth cannot be in the future'); ageResult.style.display='none'; return; }
   clearMsg(ageError);
 
   let years = today.getFullYear() - dob.getFullYear();
@@ -59,9 +59,9 @@ calcBtn.onclick = ()=>{
 
   ageResult.style.display='none'; void ageResult.offsetWidth; ageResult.style.display='block';
   ageResult.innerHTML = `
-    <div class="stat-row"><span class="k">বয়স</span><span class="v">${years} বছর ${months} মাস ${days} দিন</span></div>
-    <div class="stat-row"><span class="k">মোট দিন বেঁচে আছো</span><span class="v">${totalDays.toLocaleString()} দিন</span></div>
-    <div class="stat-row"><span class="k">পরের জন্মদিন</span><span class="v">${daysToNext} দিন পর</span></div>
+    <div class="stat-row"><span class="k">Age</span><span class="v">${years} yrs ${months} mo ${days} days</span></div>
+    <div class="stat-row"><span class="k">Total days lived</span><span class="v">${totalDays.toLocaleString()} days</span></div>
+    <div class="stat-row"><span class="k">Next birthday</span><span class="v">in ${daysToNext} days</span></div>
   `;
 };
 onEnter(document.getElementById('dob'), calcBtn);

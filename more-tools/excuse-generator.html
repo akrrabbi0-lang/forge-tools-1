@@ -1,39 +1,39 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="অফিস বা স্কুলে দেরি হলে মজার বাহানা বের করার জেনারেটর।">
+<meta name="description" content="Generator for a funny excuse when you're late for work or school.">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="shortcut icon" href="../favicon.ico">
 <link rel="icon" type="image/png" href="../favicon.png">
-<title>এক্সকিউজ জেনারেটর — Forge</title>
+<title>Excuse Generator — Forge</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="tool-topbar">
+  <a class="back-btn" href="../index.html"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>Home</a>
+  <span class="tt-name">Excuse Generator</span>
+</div>
 <div class="wrap">
-  <a class="back" href="index.html">← সব টুল</a>
-  <div class="mark"><img src="../favicon.svg" alt="Forge" class="mark-icon">FORGE.</div>
-  <h1>এক্সকিউজ জেনারেটর</h1>
-  <p class="sub">শুধু মজার জন্য — অফিস বা স্কুলে দেরি হলে একটা বাহানা!</p>
+  <h1>Excuse Generator</h1>
+  <p class="sub">Just for fun — an excuse for when you're late for work or school!</p>
 
   <div class="panel">
     <div class="chip-row" id="excChips">
-      <div class="chip on" data-v="office" tabindex="0" role="button">অফিস</div>
-      <div class="chip" data-v="school" tabindex="0" role="button">স্কুল/কলেজ</div>
+      <div class="chip on" data-v="office" tabindex="0" role="button">Work</div>
+      <div class="chip" data-v="school" tabindex="0" role="button">School/College</div>
     </div>
-    <button class="btn" id="excGenBtn">বাহানা দাও</button>
+    <button class="btn" id="excGenBtn">Give me an excuse</button>
     <div class="result" id="excResult" style="display:none"></div>
   </div>
-
-  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
 </div>
 
 <script src="common.js"></script>
 <script>
 const EXCUSES = {
-  office: ["রাস্তায় প্রচণ্ড জ্যাম ছিল, তাই দেরি হয়ে গেল।","হঠাৎ পেটে ব্যথা শুরু হয়েছিল, ডাক্তার দেখাতে হলো।","ইন্টারনেট প্রবলেমের জন্য মেইল পাঠাতে পারিনি।","বাসায় হঠাৎ পানির লাইন লিক করেছিল, ঠিক করাতে হলো।","গাড়ি স্টার্ট নিচ্ছিল না, মেকানিক ডাকতে হয়েছে।"],
-  school: ["রাতে পড়তে পড়তে ঘুমিয়ে পড়েছিলাম, খাতা আনতে ভুলে গেছি।","বাসায় হঠাৎ মেহমান এসেছিল, পড়ার সময় পাইনি।","প্রিন্টার নষ্ট হয়ে গিয়েছিল অ্যাসাইনমেন্ট প্রিন্ট করার সময়।","ছোট ভাই/বোন অসুস্থ, তাকে দেখতে হয়েছে।","কম্পিউটার হঠাৎ রিস্টার্ট হয়ে ফাইল সেভ হয়নি।"]
+  office: ["Traffic was brutal, that's why I'm late.","Sudden stomach ache, had to see a doctor.","Couldn't send the email because of an internet issue.","A water pipe burst at home, had to get it fixed.","The car wouldn't start, had to call a mechanic."],
+  school: ["Fell asleep studying last night and forgot my notebook.","Guests showed up at home out of nowhere, had no time to study.","The printer broke while I was printing the assignment.","My younger sibling was sick, had to look after them.","The computer restarted on its own and the file didn't save."]
 };
 const excuseBags = { office: makeBag(EXCUSES.office), school: makeBag(EXCUSES.school) };
 

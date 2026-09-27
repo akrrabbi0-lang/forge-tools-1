@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-W7D5ZTED2S"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-W7D5ZTED2S');
+</script>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free WiFi QR Code Generator — Download PNG | Forge</title>
+<meta name="description" content="Turn your WiFi network name and password into a scannable QR code for free. Guests scan it to connect instantly — no typing, no sign-up.">
+<link rel="canonical" href="https://REPLACE_WITH_YOUR_DOMAIN/wifi-qr.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="tool-page">
+
+<div class="tool-topbar">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Home
+  </a>
+  <span class="tt-name">WiFi QR Generator</span>
+</div>
+
+<div class="tool-body">
+<section class="tool-panel" id="tool-wifi-qr">
+      <h2>WiFi QR Code Generator</h2>
+      <p class="desc">Enter your network name and password — guests scan the code to connect instantly, no typing needed.</p>
+      <div class="field">
+        <label>Network name (SSID)</label>
+        <input type="text" id="wifi-ssid" placeholder="e.g. Home_WiFi">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="text" id="wifi-pass" placeholder="Password">
+      </div>
+      <div class="row" style="margin-bottom:8px;">
+        <div class="field" style="max-width:220px;">
+          <label>Encryption</label>
+          <select id="wifi-enc">
+            <option value="WPA">WPA/WPA2</option>
+            <option value="WEP">WEP</option>
+            <option value="nopass">None (Open)</option>
+          </select>
+        </div>
+      </div>
+      <button class="action brass" id="wifi-generate">Generate QR code</button>
+      <div id="wifi-canvas-wrap" class="hidden"><div id="wifi-canvas"></div></div>
+      <div style="margin-top:16px;">
+        <button class="action hidden" id="wifi-download">Download PNG</button>
+      </div>
+    </section>
+</div>
+
+<script>
+function escapeWifi(s){ return s.replace(/([\\;,:"])/g,'\\$1'); }
+
+document.getElementById('wifi-generate').addEventListener('click', ()=>{
+  const ssid = document.getElementById('wifi-ssid').value.trim();
+  const pass = document.getElementById('wifi-pass').value;
+  const enc = document.getElementById('wifi-enc').value;
+  if(!ssid) return;
+  const payload = `WIFI:T:${enc};S:${escapeWifi(ssid)};P:${enc==='nopass'?'':escapeWifi(pass)};;`;
+
+  const wrap = document.getElementById('wifi-canvas');
+  wrap.innerHTML = '';
+  new QRCode(wrap, {
+    text: payload,
+    width: 300,
+    height: 300,
+    colorDark: "#1B2430",
+    colorLight: "#ffffff",
+  });
+  document.getElementById('wifi-canvas-wrap').classList.remove('hidden');
+  document.getElementById('wifi-download').classList.remove('hidden');
+});
+document.getElementById('wifi-download').addEventListener('click', ()=>{
+  const canvas = document.querySelector('#wifi-canvas canvas');
+  if(!canvas) return;
+  const link = document.createElement('a');
+  link.download = 'wifi-qr.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
+</script>
+
+</body>
+</html>

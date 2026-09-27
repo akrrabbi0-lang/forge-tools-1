@@ -1,39 +1,39 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="বাংলা ছেলে বা মেয়ের নাম, অথবা বিজনেসের নাম আইডিয়া বের করার ফ্রি জেনারেটর।">
+<meta name="description" content="Free generator for Bengali boy or girl names, or business name ideas.">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="shortcut icon" href="../favicon.ico">
 <link rel="icon" type="image/png" href="../favicon.png">
-<title>নাম জেনারেটর — Forge</title>
+<title>Name Generator — Forge</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="tool-topbar">
+  <a class="back-btn" href="../index.html"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>Home</a>
+  <span class="tt-name">Name Generator</span>
+</div>
 <div class="wrap">
-  <a class="back" href="index.html">← সব টুল</a>
-  <div class="mark"><img src="../favicon.svg" alt="Forge" class="mark-icon">FORGE.</div>
-  <h1>নাম জেনারেটর</h1>
-  <p class="sub">বাংলা নাম বা বিজনেসের নাম আইডিয়া বের করো।</p>
+  <h1>Name Generator</h1>
+  <p class="sub">Get Bengali name ideas or a business name.</p>
 
   <div class="panel">
     <div class="chip-row" id="nameChips">
-      <div class="chip on" data-v="boy" tabindex="0" role="button">ছেলে</div>
-      <div class="chip" data-v="girl" tabindex="0" role="button">মেয়ে</div>
-      <div class="chip" data-v="biz" tabindex="0" role="button">বিজনেস</div>
+      <div class="chip on" data-v="boy" tabindex="0" role="button">Boy</div>
+      <div class="chip" data-v="girl" tabindex="0" role="button">Girl</div>
+      <div class="chip" data-v="biz" tabindex="0" role="button">Business</div>
     </div>
-    <button class="btn" id="nameGenBtn">নাম দাও</button>
+    <button class="btn" id="nameGenBtn">Give me names</button>
     <div class="result" id="nameResult" style="display:none"></div>
   </div>
-
-  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
 </div>
 
 <script src="common.js"></script>
 <script>
-const BN_BOY = ["আয়ান","নাফিস","রাফসান","আরহাম","জাওয়াদ","ইয়াসির","সাদমান","রিয়াদ","তানভীর","আবির","ফাহিম","ইমতিয়াজ"];
-const BN_GIRL = ["আয়েশা","মাইশা","রাইসা","নাফিসা","জান্নাত","সাবিহা","তাসনিম","আফসানা","রোজা","ইলমা","ফাবিহা","সাইমা"];
+const BN_BOY = ["Ayan","Nafis","Rafsan","Arham","Jawad","Yasir","Sadman","Riyad","Tanvir","Abir","Fahim","Imtiaz"];
+const BN_GIRL = ["Ayesha","Maisha","Raisa","Nafisa","Jannat","Sabiha","Tasnim","Afsana","Roza","Ilma","Fabiha","Saima"];
 const BIZ_PREFIX = ["Metro","Prime","Nova","Urban","Delta","Bright","Royal","Swift","Golden","Trend","Pure","Vivid"];
 const BIZ_SUFFIX = ["Mart","Hub","Bazaar","Corner","House","Traders","Point","Studio","Collection","Express"];
 

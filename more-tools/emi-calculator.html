@@ -1,35 +1,35 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="লোনের মাসিক কিস্তি (EMI), মোট সুদ আর মোট পরিশোধ বের করার ফ্রি ক্যালকুলেটর।">
+<meta name="description" content="Free calculator for a loan's monthly installment (EMI), total interest, and total repayment.">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="shortcut icon" href="../favicon.ico">
 <link rel="icon" type="image/png" href="../favicon.png">
-<title>EMI / লোন ক্যালকুলেটর — Forge</title>
+<title>EMI / Loan Calculator — Forge</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="tool-topbar">
+  <a class="back-btn" href="../index.html"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>Home</a>
+  <span class="tt-name">EMI / Loan Calculator</span>
+</div>
 <div class="wrap">
-  <a class="back" href="calculators.html">← ক্যালকুলেটর</a>
-  <div class="mark"><img src="../favicon.svg" alt="Forge" class="mark-icon">FORGE.</div>
-  <h1>EMI / লোন ক্যালকুলেটর</h1>
-  <p class="sub">লোনের পরিমাণ, সুদের হার আর মেয়াদ দিলে মাসিক কিস্তি বের করে দেবে।</p>
+  <h1>EMI / Loan Calculator</h1>
+  <p class="sub">Enter the loan amount, interest rate, and term to get the monthly installment.</p>
 
   <div class="panel">
-    <label>লোনের পরিমাণ (টাকা)</label>
-    <input type="number" id="emiAmount" placeholder="যেমন: 500000">
+    <label>Loan amount (BDT)</label>
+    <input type="number" id="emiAmount" placeholder="e.g. 500000">
     <div class="row">
-      <div><label>বার্ষিক সুদের হার (%)</label><input type="number" id="emiRate" placeholder="যেমন: 12" step="0.1"></div>
-      <div><label>মেয়াদ (বছর)</label><input type="number" id="emiYears" placeholder="যেমন: 5"></div>
+      <div><label>Annual interest rate (%)</label><input type="number" id="emiRate" placeholder="e.g. 12" step="0.1"></div>
+      <div><label>Term (years)</label><input type="number" id="emiYears" placeholder="e.g. 5"></div>
     </div>
-    <button class="btn" id="emiBtn">EMI বের করো</button>
+    <button class="btn" id="emiBtn">Calculate EMI</button>
     <div class="error-text" id="emiError" style="display:none"></div>
     <div class="result" id="emiResult" style="display:none"></div>
   </div>
-
-  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
 </div>
 
 <script src="common.js"></script>
@@ -43,7 +43,7 @@ emiBtn.onclick = ()=>{
   const P = parseFloat(document.getElementById('emiAmount').value);
   const annualRate = parseFloat(document.getElementById('emiRate').value);
   const years = parseFloat(document.getElementById('emiYears').value);
-  if(!P || !annualRate || !years){ showError(emiError, 'সব ফিল্ড পূরণ করো'); emiResult.style.display='none'; return; }
+  if(!P || !annualRate || !years){ showError(emiError, 'Please fill in every field'); emiResult.style.display='none'; return; }
   clearMsg(emiError);
 
   const n = years * 12;
@@ -54,9 +54,9 @@ emiBtn.onclick = ()=>{
 
   emiResult.style.display='none'; void emiResult.offsetWidth; emiResult.style.display='block';
   emiResult.innerHTML = `
-    <div class="stat-row"><span class="k">মাসিক কিস্তি (EMI)</span><span class="v">৳${emi.toFixed(2)}</span></div>
-    <div class="stat-row"><span class="k">মোট পরিশোধ</span><span class="v">৳${totalPay.toFixed(2)}</span></div>
-    <div class="stat-row"><span class="k">মোট সুদ</span><span class="v">৳${totalInterest.toFixed(2)}</span></div>
+    <div class="stat-row"><span class="k">Monthly installment (EMI)</span><span class="v">৳${emi.toFixed(2)}</span></div>
+    <div class="stat-row"><span class="k">Total repayment</span><span class="v">৳${totalPay.toFixed(2)}</span></div>
+    <div class="stat-row"><span class="k">Total interest</span><span class="v">৳${totalInterest.toFixed(2)}</span></div>
   `;
 };
 onEnter(emiInputs, emiBtn);

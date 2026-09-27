@@ -32,6 +32,28 @@ input:hover, select:hover, textarea:hover{border-color:#3a3a3c;}
 .mark{font-family:var(--mono);font-weight:700;letter-spacing:0.08em;color:var(--accent);font-size:14px;display:inline-flex;align-items:center;gap:7px;}
 .mark-icon{width:18px;height:18px;border-radius:5px;flex-shrink:0;display:block;}
 header{display:flex;flex-direction:column;align-items:flex-start;gap:2px;}
+.tool-topbar{
+  position:sticky;top:0;left:0;right:0;
+  background:var(--surface);
+  padding:16px clamp(16px,4vw,32px);
+  display:flex;align-items:center;gap:14px;
+  border-bottom:3px solid var(--accent);
+  margin:-24px -16px 24px;
+  z-index:10;
+}
+.back-btn{
+  display:flex;align-items:center;gap:8px;
+  background:none;border:1px solid var(--border);color:var(--text);
+  font-family:var(--sans);font-size:14px;font-weight:500;
+  padding:8px 16px 8px 12px;border-radius:20px;cursor:pointer;
+  text-decoration:none;
+  transition:background .15s ease, border-color .15s ease;
+}
+.back-btn:hover{ background:var(--surface-2); border-color:var(--accent); }
+.back-btn svg{ width:16px; height:16px; stroke:var(--text); fill:none; stroke-width:2; }
+.tool-topbar .tt-name{
+  font-family:var(--mono);color:var(--muted);font-size:14px;font-weight:600;
+}
 h1{font-family:var(--mono);font-size:clamp(20px,4vw,26px);font-weight:700;margin:6px 0 4px;line-height:1.25;}
 .sub{color:var(--muted);font-size:14px;max-width:52ch;line-height:1.5;margin:0 0 22px;}
 
@@ -152,34 +174,50 @@ footer{margin-top:32px;text-align:center;color:var(--muted);font-size:12px;font-
 .sudoku .thick-r{border-right:2px solid var(--border);}
 .sudoku .thick-b{border-bottom:2px solid var(--border);}
 
-/* rubik's cube net — styled to actually look like a cube: black plastic
-   body between stickers, rounded glossy tiles, and a letter on each
+/* rubik's cube — a real rotatable 3D cube (drag to spin), styled like a
+   modern stickerless speedcube: colored plastic tiles, dark gaps between
+   them for the mechanism, rounded glossy corners, and a letter on every
    fixed center so it's obvious which face is which. */
-.cube-net{
-  display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);
-  gap:10px;max-width:440px;margin:18px auto;padding:14px;
-  background:#050506;border-radius:14px;
-  box-shadow:0 1px 0 rgba(255,255,255,0.04) inset, 0 10px 26px rgba(0,0,0,0.4);
+.cube3d-wrap{
+  display:flex;justify-content:center;align-items:center;
+  padding:34px 10px 26px;
+  perspective:900px;
+  touch-action:none;user-select:none;cursor:grab;
 }
-.face-block{
+.cube3d-wrap:active{cursor:grabbing;}
+.cube3d{
+  position:relative;width:180px;height:180px;
+  transform-style:preserve-3d;
+  transform:rotateX(-20deg) rotateY(35deg);
+  will-change:transform;
+}
+.face3d{
+  position:absolute;top:0;left:0;width:180px;height:180px;
   display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
-  gap:4px;background:#050506;padding:4px;border-radius:8px;
+  gap:4px;padding:4px;background:#050506;border-radius:14px;
+  box-shadow:0 1px 0 rgba(255,255,255,0.04) inset;
+  backface-visibility:hidden;
+  transition:transform .45s cubic-bezier(.4,0,.2,1);
 }
-.face-U{grid-column:2;grid-row:1;}
-.face-L{grid-column:1;grid-row:2;}
-.face-F{grid-column:2;grid-row:2;}
-.face-R{grid-column:3;grid-row:2;}
-.face-B{grid-column:4;grid-row:2;}
-.face-D{grid-column:2;grid-row:3;}
+.face3d-U{ transform:rotateX(90deg) translateZ(90px) rotateZ(var(--spin, 0deg)); }
+.face3d-D{ transform:rotateX(-90deg) translateZ(90px) rotateZ(var(--spin, 0deg)); }
+.face3d-F{ transform:translateZ(90px) rotateZ(var(--spin, 0deg)); }
+.face3d-B{ transform:rotateY(180deg) translateZ(90px) rotateZ(var(--spin, 0deg)); }
+.face3d-R{ transform:rotateY(90deg) translateZ(90px) rotateZ(var(--spin, 0deg)); }
+.face3d-L{ transform:rotateY(-90deg) translateZ(90px) rotateZ(var(--spin, 0deg)); }
 .sticker{
-  width:100%;aspect-ratio:1;border-radius:5px;cursor:pointer;
+  width:100%;aspect-ratio:1;border-radius:6px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 1px 0 rgba(255,255,255,0.45) inset, 0 -2px 3px rgba(0,0,0,0.25) inset;
   transition:transform .1s ease;
 }
-.sticker:hover{transform:scale(0.94);}
+.sticker:hover{transform:scale(0.92);}
 .sticker.locked{cursor:default;}
 .sticker.locked:hover{transform:none;}
+.sticker.unset{
+  box-shadow:none;
+  border:2px dashed rgba(0,0,0,0.28);
+}
 .face-label{
   font-family:var(--mono);font-weight:700;font-size:12px;
   color:rgba(0,0,0,0.55);text-shadow:0 1px 0 rgba(255,255,255,0.3);
@@ -190,6 +228,19 @@ footer{margin-top:32px;text-align:center;color:var(--muted);font-size:12px;font-
 .color-swatch.on{border-color:var(--accent);}
 .solve-steps{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;}
 .solve-steps span{background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-family:var(--mono);font-size:13px;}
+.solve-steps span.current{background:var(--accent);color:#1a1400;border-color:var(--accent);font-weight:700;}
+.solve-steps span.done{opacity:0.45;}
+.playback{
+  margin-top:14px;padding:14px;border-radius:10px;
+  background:var(--surface-2);border:1px solid var(--border);
+}
+.playback-info{display:flex;justify-content:space-between;align-items:center;}
+.playback-info #stepLabel{font-size:13px;color:var(--muted);font-family:var(--mono);}
+.playback-info #stepMoveLabel{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent);}
+.sticker.active-layer{
+  box-shadow:0 0 0 3px var(--accent), 0 1px 0 rgba(255,255,255,0.45) inset;
+  z-index:2;
+}
 
 /* speech */
 .voice-row{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap;}

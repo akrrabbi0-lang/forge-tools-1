@@ -1,37 +1,37 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="নাম দিয়ে স্টাইলিশ ডিজিটাল সিগনেচার বানাও, PNG হিসেবে ডাউনলোড করো।">
+<meta name="description" content="Turn a name into a stylish digital signature and download it as a PNG.">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="shortcut icon" href="../favicon.ico">
 <link rel="icon" type="image/png" href="../favicon.png">
-<title>সিগনেচার জেনারেটর — Forge</title>
+<title>Signature Generator — Forge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="tool-topbar">
+  <a class="back-btn" href="../index.html"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>Home</a>
+  <span class="tt-name">Signature Generator</span>
+</div>
 <div class="wrap">
-  <a class="back" href="index.html">← সব টুল</a>
-  <div class="mark"><img src="../favicon.svg" alt="Forge" class="mark-icon">FORGE.</div>
-  <h1>সিগনেচার জেনারেটর</h1>
-  <p class="sub">নাম লিখলে একটা স্টাইলিশ সিগনেচার বানিয়ে দেবে, ডাউনলোড করা যাবে।</p>
+  <h1>Signature Generator</h1>
+  <p class="sub">Type a name and get a stylish signature you can download.</p>
 
   <div class="panel">
-    <label>নাম</label>
-    <input type="text" id="sigName" placeholder="যেমন: Rahim Uddin">
-    <button class="btn" id="sigGenBtn">সিগনেচার বানাও</button>
+    <label>Name</label>
+    <input type="text" id="sigName" placeholder="e.g. Rahim Uddin">
+    <button class="btn" id="sigGenBtn">Generate signature</button>
     <div class="error-text" id="sigError" style="display:none"></div>
     <div class="sig-wrap" id="sigResult" style="display:none">
       <canvas id="sigCanvas" width="420" height="150"></canvas>
-      <button class="btn ghost" id="sigDownload">ডাউনলোড PNG</button>
+      <button class="btn ghost" id="sigDownload">Download PNG</button>
     </div>
   </div>
-
-  <footer>FORGE. — runs in your browser, nothing is uploaded</footer>
 </div>
 
 <script src="common.js"></script>
@@ -40,7 +40,7 @@ const sigGenBtn = document.getElementById('sigGenBtn');
 const sigError = document.getElementById('sigError');
 sigGenBtn.onclick = ()=>{
   const name = document.getElementById('sigName').value.trim();
-  if(!name){ showError(sigError, 'একটা নাম লেখো'); document.getElementById('sigResult').style.display='none'; return; }
+  if(!name){ showError(sigError, 'Please type a name'); document.getElementById('sigResult').style.display='none'; return; }
   clearMsg(sigError);
   const c = document.getElementById('sigCanvas');
   const ctx = c.getContext('2d');
