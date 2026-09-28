@@ -174,86 +174,62 @@ footer{margin-top:32px;text-align:center;color:var(--muted);font-size:12px;font-
 .sudoku .thick-r{border-right:2px solid var(--border);}
 .sudoku .thick-b{border-bottom:2px solid var(--border);}
 
-/* rubik's cube — a real rotatable 3D cube (drag to spin), styled like a
-   modern stickerless speedcube: colored plastic tiles, dark gaps between
-   them for the mechanism, rounded glossy corners, and a letter on every
-   fixed center so it's obvious which face is which. */
+
+/* ===== Rubik's cube: 26 real 3D cubies so a layer can turn smoothly ===== */
+.color-picker{display:flex;gap:10px;justify-content:center;margin:4px 0 0;}
+.color-swatch{width:34px;height:34px;border-radius:8px;cursor:pointer;border:2px solid transparent;}
+.color-swatch.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);}
 .cube3d-wrap{
+  --u:60px;
   display:flex;justify-content:center;align-items:center;
-  padding:34px 10px 26px;
-  perspective:900px;
-  touch-action:none;user-select:none;cursor:grab;
+  height:calc(var(--u) * 4.6);
+  perspective:1000px;
+  touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;
 }
 .cube3d-wrap:active{cursor:grabbing;}
-@media(max-width:640px){
-  /* Keep the cube pinned near the top of the screen on phones while you
-     scroll down to the color picker / buttons, so you can always see it
-     turn — simplest fix: make it sticky instead of scrolling away. */
-  .cube3d-wrap{
-    position:sticky;
-    top:0;
-    z-index:5;
-    background:var(--bg);
-    padding:14px 10px 10px;
-  }
-}
 .cube3d{
-  position:relative;width:180px;height:180px;
+  position:relative;width:0;height:0;
   transform-style:preserve-3d;
-  transform:rotateX(-20deg) rotateY(35deg);
-  will-change:transform;
+  transform:rotateX(-25deg) rotateY(-35deg);
 }
-.face3d{
-  position:absolute;top:0;left:0;width:180px;height:180px;
-  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
-  gap:4px;padding:4px;background:#050506;border-radius:14px;
-  box-shadow:0 1px 0 rgba(255,255,255,0.04) inset;
-  backface-visibility:hidden;
-  transition:transform .45s cubic-bezier(.4,0,.2,1);
+@supports (height:1dvh){ .cube3d-wrap{ --u:min(60px, 8.6dvh); } }
+.cubie{
+  position:absolute;left:calc(var(--u) / -2);top:calc(var(--u) / -2);
+  width:var(--u);height:var(--u);
+  transform-style:preserve-3d;
+  transition:transform .5s cubic-bezier(.45,.05,.25,1);
 }
-.face3d-U{ transform:rotateX(90deg) translateZ(90px) rotateZ(var(--spin, 0deg)); }
-.face3d-D{ transform:rotateX(-90deg) translateZ(90px) rotateZ(var(--spin, 0deg)); }
-.face3d-F{ transform:translateZ(90px) rotateZ(var(--spin, 0deg)); }
-.face3d-B{ transform:rotateY(180deg) translateZ(90px) rotateZ(var(--spin, 0deg)); }
-.face3d-R{ transform:rotateY(90deg) translateZ(90px) rotateZ(var(--spin, 0deg)); }
-.face3d-L{ transform:rotateY(-90deg) translateZ(90px) rotateZ(var(--spin, 0deg)); }
-.sticker{
-  width:100%;aspect-ratio:1;border-radius:6px;cursor:pointer;
+.cubie.no-anim{transition:none;}
+.cface{
+  position:absolute;inset:0;background:#0a0a0b;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 1px 0 rgba(255,255,255,0.45) inset, 0 -2px 3px rgba(0,0,0,0.25) inset;
-  transition:transform .1s ease;
 }
-.sticker:hover{transform:scale(0.92);}
+.cface-U{transform:rotateX(90deg) translateZ(calc(var(--u)/2));}
+.cface-D{transform:rotateX(-90deg) translateZ(calc(var(--u)/2));}
+.cface-F{transform:translateZ(calc(var(--u)/2));}
+.cface-B{transform:rotateY(180deg) translateZ(calc(var(--u)/2));}
+.cface-R{transform:rotateY(90deg) translateZ(calc(var(--u)/2));}
+.cface-L{transform:rotateY(-90deg) translateZ(calc(var(--u)/2));}
+.sticker{
+  width:88%;height:88%;border-radius:22%;cursor:pointer;
+  box-shadow:0 1px 0 rgba(255,255,255,0.45) inset, 0 -2px 3px rgba(0,0,0,0.22) inset;
+}
 .sticker.locked{cursor:default;}
-.sticker.locked:hover{transform:none;}
-.sticker.unset{
-  box-shadow:none;
-  border:2px dashed rgba(0,0,0,0.28);
-}
-.face-label{
-  font-family:var(--mono);font-weight:700;font-size:12px;
-  color:rgba(0,0,0,0.55);text-shadow:0 1px 0 rgba(255,255,255,0.3);
-  pointer-events:none;user-select:none;
-}
-.color-picker{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
-.color-swatch{width:32px;height:32px;border-radius:6px;cursor:pointer;border:2px solid transparent;}
-.color-swatch.on{border-color:var(--accent);}
-.solve-steps{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;}
-.solve-steps span{background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-family:var(--mono);font-size:13px;}
-.solve-steps span.current{background:var(--accent);color:#1a1400;border-color:var(--accent);font-weight:700;}
-.solve-steps span.done{opacity:0.45;}
-.playback{
-  margin-top:14px;padding:14px;border-radius:10px;
-  background:var(--surface-2);border:1px solid var(--border);
-}
-.playback-info{display:flex;justify-content:space-between;align-items:center;}
-.playback-info #stepLabel{font-size:13px;color:var(--muted);font-family:var(--mono);}
-.playback-info #stepMoveLabel{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent);}
-.sticker.active-layer{
-  box-shadow:0 0 0 3px var(--accent), 0 1px 0 rgba(255,255,255,0.45) inset;
-  z-index:2;
-}
+.sticker.unset{box-shadow:none;border:2px dashed rgba(0,0,0,0.28);}
+.play-row{display:none;align-items:center;justify-content:center;gap:10px;margin-top:10px;}
+.play-row .btn{margin-top:0;}
+#stepLabel{font-family:var(--mono);font-size:13px;color:var(--muted);min-width:78px;text-align:center;}
+.rubik-actions{display:flex;justify-content:center;gap:10px;margin-top:10px;}
+.rubik-actions .btn{margin-top:0;}
+#cubeMsg{margin-top:8px;padding:8px 12px;font-size:13px;text-align:center;}
 
-/* speech */
-.voice-row{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap;}
-.voice-row .btn{margin-top:0;}
+/* Phone: whole solver fits on one screen, no scrolling */
+@media(max-width:640px){
+  body.rubik-page{height:100dvh;overflow:hidden;padding-bottom:12px;display:flex;flex-direction:column;}
+  body.rubik-page .wrap{flex:1;min-height:0;display:flex;flex-direction:column;}
+  body.rubik-page .tool-topbar{margin-bottom:8px;padding-top:12px;padding-bottom:12px;}
+  body.rubik-page h1{display:none;}
+  body.rubik-page .sub{font-size:12px;margin:0 0 8px;text-align:center;}
+  body.rubik-page .panel{padding:10px;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;}
+}

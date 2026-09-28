@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://REPLACE_WITH_YOUR_DOMAIN/sitemap.xml
+Sitemap: https://silver-licorice-3d6673.netlify.app/sitemap.xml

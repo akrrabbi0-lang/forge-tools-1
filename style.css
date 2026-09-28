@@ -350,7 +350,8 @@
     .card-grid{
       display:grid;
       grid-template-columns:repeat(2, 1fr);
-      gap:12px;
+      column-gap:12px;
+      row-gap:clamp(18px, 3.4vh, 32px);
       max-width:100%;
       width:100%;
       padding:0 16px;
@@ -358,7 +359,7 @@
     .tool-card{
       width:100%;
       height:auto;
-      aspect-ratio:4/5;
+      aspect-ratio:1/1;
       border-radius:16px;
       padding:8px;
     }
