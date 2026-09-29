@@ -226,10 +226,22 @@ footer{margin-top:32px;text-align:center;color:var(--muted);font-size:12px;font-
 
 /* Phone: whole solver fits on one screen, no scrolling */
 @media(max-width:640px){
-  body.rubik-page{height:100dvh;overflow:hidden;padding-bottom:12px;display:flex;flex-direction:column;}
+  body.rubik-page{height:100dvh;overflow:hidden;padding-bottom:8px;display:flex;flex-direction:column;}
   body.rubik-page .wrap{flex:1;min-height:0;display:flex;flex-direction:column;}
-  body.rubik-page .tool-topbar{margin-bottom:8px;padding-top:12px;padding-bottom:12px;}
+  body.rubik-page .tool-topbar{margin-bottom:6px;padding-top:10px;padding-bottom:10px;}
   body.rubik-page h1{display:none;}
-  body.rubik-page .sub{font-size:12px;margin:0 0 8px;text-align:center;}
-  body.rubik-page .panel{padding:10px;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;}
+  body.rubik-page .sub{font-size:11px;margin:0 0 6px;text-align:center;line-height:1.3;}
+  body.rubik-page .panel{padding:8px;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;gap:4px;}
+  body.rubik-page .color-picker{margin:0;gap:6px;}
+  body.rubik-page .color-swatch{width:24px;height:24px;border-radius:6px;}
+  body.rubik-page .cube3d-wrap{
+    --u:min(42px, 6dvh) !important;
+    height:calc(var(--u) * 4.4);
+  }
+  body.rubik-page #cubeMsg{margin-top:4px;padding:6px 10px;font-size:12px;}
+  body.rubik-page .rubik-actions,
+  body.rubik-page .play-row{margin-top:6px;gap:8px;}
+  body.rubik-page .rubik-actions .btn,
+  body.rubik-page .play-row .btn{padding:9px 14px;font-size:13px;}
+  body.rubik-page #stepLabel{font-size:12px;min-width:60px;}
 }
