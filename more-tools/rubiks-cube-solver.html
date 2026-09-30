@@ -34,7 +34,7 @@
       <div class="cube3d" id="cube3d"></div>
     </div>
 
-    <div>
+    <div class="controls-row">
       <div class="result" id="cubeMsg" style="display:none"></div>
       <div class="rubik-actions" id="inputRow">
         <button class="btn" id="solveBtn">Solve</button>
@@ -2159,6 +2159,21 @@ FACE_ORDER.forEach(face=>{
     stickerEls[face+i] = s;
   }
 });
+
+// ---- size the cube to whatever room is actually left on screen, so the
+// Solve/Next/Back buttons below it are never pushed off-screen ----
+(function fitCube(){
+  const wrap = document.getElementById('cube3dWrap');
+  function fit(){
+    if(window.innerWidth > 640){ cube3d.style.removeProperty('--u'); return; }
+    const h = wrap.clientHeight, w = wrap.clientWidth;
+    const u = Math.max(26, Math.min(60, Math.floor(Math.min(h, w) / 4)));
+    cube3d.style.setProperty('--u', u + 'px');
+  }
+  fit();
+  window.addEventListener('resize', fit);
+  window.addEventListener('orientationchange', ()=> setTimeout(fit, 200));
+})();
 
 // ---- drag to spin the whole cube ----
 (function enableDragRotate(){

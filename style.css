@@ -346,12 +346,11 @@
     .home-center{ padding-top:76px; }
     .tool-body{ padding:32px 20px 80px; }
 
-    /* 2-per-row grid on phones */
+    /* 2-per-row grid on phones — same layout as the All Tools grid */
     .card-grid{
       display:grid;
       grid-template-columns:repeat(2, 1fr);
-      column-gap:12px;
-      row-gap:clamp(18px, 3.4vh, 32px);
+      gap:12px;
       max-width:100%;
       width:100%;
       padding:0 16px;
@@ -359,7 +358,7 @@
     .tool-card{
       width:100%;
       height:auto;
-      aspect-ratio:6/5;
+      aspect-ratio:1/1;
       border-radius:16px;
       padding:8px;
     }
